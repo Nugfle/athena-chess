@@ -1,5 +1,16 @@
 use log::error;
-use std::fmt::Display;
+use std::{error::Error, fmt::Display};
+
+#[derive(Debug)]
+pub struct SquareFromError((u8, u8));
+
+impl Display for SquareFromError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Square From Error: Can't create square from ({},{})", self.0.0, self.0.1)
+    }
+}
+
+impl Error for SquareFromError {}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Square {
@@ -8,18 +19,12 @@ pub struct Square {
 }
 
 impl Square {
-    pub fn new(horizontal: u8, vertical: u8) -> Option<Self> {
+    pub fn new(horizontal: u8, vertical: u8) -> Result<Self, SquareFromError> {
         if horizontal >= 8 || vertical >= 8 {
-            error!(
-                "got invalid horizontal or vertical position: {}:{}",
-                horizontal, vertical
-            );
-            return None;
+            error!("got invalid horizontal or vertical position: {}:{}", horizontal, vertical);
+            return Err(SquareFromError((horizontal, vertical)));
         }
-        Some(Self {
-            horizontal,
-            vertical,
-        })
+        Ok(Self { horizontal, vertical })
     }
 
     pub fn get_horizontal(&self) -> u8 {
@@ -27,6 +32,13 @@ impl Square {
     }
     pub fn get_vertical(&self) -> u8 {
         self.vertical
+    }
+}
+
+impl TryFrom<(u8, u8)> for Square {
+    type Error = SquareFromError;
+    fn try_from(value: (u8, u8)) -> Result<Self, Self::Error> {
+        Self::new(value.0, value.1)
     }
 }
 
