@@ -8,15 +8,16 @@ pub struct Board {
 impl Board {
     pub fn square_is_occupied<T>(&self, square: T) -> Result<bool, T::Error>
     where
-        T: TryInto<Square> + Copy + Clone,
+        T: TryInto<Square>,
     {
         Ok(self.get_piece_on_square(square).is_ok())
     }
 
     pub fn get_piece_on_square<T>(&self, square: T) -> Result<Option<&Piece>, T::Error>
     where
-        T: TryInto<Square> + Copy + Clone,
+        T: TryInto<Square>,
     {
-        Ok(self.board[square.try_into()?.get_vertical() as usize][square.try_into()?.get_horizontal() as usize].as_ref())
+        let square = square.try_into()?;
+        Ok(self.board[square.get_vertical() as usize][square.get_horizontal() as usize].as_ref())
     }
 }

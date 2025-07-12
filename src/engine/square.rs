@@ -1,7 +1,7 @@
 use log::error;
 use std::{error::Error, fmt::Display};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct SquareFromError((u8, u8));
 
 impl Display for SquareFromError {
@@ -39,6 +39,12 @@ impl TryFrom<(u8, u8)> for Square {
     type Error = SquareFromError;
     fn try_from(value: (u8, u8)) -> Result<Self, Self::Error> {
         Self::new(value.0, value.1)
+    }
+}
+impl TryFrom<Result<Square, SquareFromError>> for Square {
+    type Error = SquareFromError;
+    fn try_from(value: Result<Square, SquareFromError>) -> Result<Self, Self::Error> {
+        value
     }
 }
 
