@@ -68,7 +68,7 @@ impl Display for Square {
                 7 => "h",
                 _ => panic!(),
             },
-            self.vertical
+            self.vertical + 1
         )
     }
 }

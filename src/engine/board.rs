@@ -1,3 +1,4 @@
+use crate::engine::moves::Move;
 use crate::engine::piece::Piece;
 use crate::engine::square::Square;
 
@@ -19,5 +20,11 @@ impl Board {
     {
         let square = square.try_into()?;
         Ok(self.board[square.get_vertical() as usize][square.get_horizontal() as usize].as_ref())
+    }
+
+    pub fn make_move<T>(&mut self, from: T, to: T) -> Result<Move, T::Error>
+    where
+        T: TryInto<Square>,
+    {
     }
 }
