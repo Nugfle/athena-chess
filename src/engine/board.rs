@@ -1,30 +1,51 @@
-use crate::engine::moves::Move;
-use crate::engine::piece::Piece;
+use std::usize;
+
+use crate::engine::chess_move::Move;
+use crate::engine::piece::{Color, Piece};
 use crate::engine::square::Square;
+use thiserror::Error;
+
+#[derive(Debug, Clone, Copy, Error)]
+#[error("Illegal Move {piece} from {from} to {to}")]
+pub struct IllegalMoveError {
+    from: Square,
+    to: Square,
+    piece: Piece,
+}
+
+impl From<Move> for IllegalMoveError {
+    fn from(value: Move) -> Self {
+        Self {
+            from: value.get_from(),
+            to: value.get_to(),
+            piece: value.get_piece(),
+        }
+    }
+}
 
 pub struct Board {
     board: [[Option<Piece>; 8]; 8],
 }
 
 impl Board {
-    pub fn square_is_occupied<T>(&self, square: T) -> Result<bool, T::Error>
-    where
-        T: TryInto<Square>,
-    {
-        Ok(self.get_piece_on_square(square).is_ok())
+    pub fn square_is_occupied(&self, square: Square) -> bool {
+        self.get_piece_on_square(square).is_some()
     }
 
-    pub fn get_piece_on_square<T>(&self, square: T) -> Result<Option<&Piece>, T::Error>
-    where
-        T: TryInto<Square>,
-    {
-        let square = square.try_into()?;
-        Ok(self.board[square.get_vertical() as usize][square.get_horizontal() as usize].as_ref())
+    pub fn get_piece_on_square(&self, square: Square) -> Option<&Piece> {
+        self.board[square.vertical() as usize][square.horizontal() as usize].as_ref()
     }
 
-    pub fn make_move<T>(&mut self, from: T, to: T) -> Result<Move, T::Error>
-    where
-        T: TryInto<Square>,
-    {
+    pub fn put_piece(&mut self, square: Square, piece: Piece) {
+        self.board[square.vertical() as usize][square.horizontal() as usize] = Some(piece)
+    }
+
+    pub fn clear_square(&mut self, square: Square) {
+        self.board[square.vertical() as usize][square.horizontal() as usize] = None
+    }
+
+    pub fn move_piece(&mut self, from: Square, to: Square) {
+        self.board[to.horizontal() as usize][from.vertical() as usize] =
+            std::mem::take(&mut self.board[from.horizontal() as usize][from.vertical() as usize]);
     }
 }

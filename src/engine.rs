@@ -1,6 +1,7 @@
 mod board;
+mod chess_move;
+mod error;
 mod evaluator;
-mod moves;
 mod piece;
 mod position;
 mod square;

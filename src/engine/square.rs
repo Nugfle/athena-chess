@@ -1,49 +1,100 @@
 use log::error;
-use std::{error::Error, fmt::Display};
+use std::fmt::Display;
+use std::hash::Hash;
+use std::num::TryFromIntError;
+use thiserror::Error;
 
-#[derive(Debug, Clone, Copy)]
-pub struct SquareFromError((u8, u8));
+#[derive(Error, Debug, Clone, Copy)]
+#[error("Can't create Square, out of bounds!")]
+pub struct InvalidSquareError {}
 
-impl Display for SquareFromError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Square From Error: Can't create square from ({},{})", self.0.0, self.0.1)
+impl From<TryFromIntError> for InvalidSquareError {
+    fn from(_: TryFromIntError) -> Self {
+        Self {}
     }
 }
-
-impl Error for SquareFromError {}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Square {
     horizontal: u8,
     vertical: u8,
 }
-
-impl Square {
-    pub fn new(horizontal: u8, vertical: u8) -> Result<Self, SquareFromError> {
-        if horizontal >= 8 || vertical >= 8 {
-            error!("got invalid horizontal or vertical position: {}:{}", horizontal, vertical);
-            return Err(SquareFromError((horizontal, vertical)));
-        }
-        Ok(Self { horizontal, vertical })
-    }
-
-    pub fn get_horizontal(&self) -> u8 {
-        self.horizontal
-    }
-    pub fn get_vertical(&self) -> u8 {
-        self.vertical
+impl Hash for Square {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        state.write_u8(self.vertical * 8 + self.horizontal); // ToDo: Test whether >>3 is faster
     }
 }
 
+impl Square {
+    pub fn new(horizontal: u8, vertical: u8) -> Result<Self, InvalidSquareError> {
+        if horizontal >= 8 || vertical >= 8 {
+            Err(InvalidSquareError {})
+        } else {
+            Ok(Self { horizontal, vertical })
+        }
+    }
+
+    pub fn horizontal(&self) -> u8 {
+        self.horizontal
+    }
+    pub fn vertical(&self) -> u8 {
+        self.vertical
+    }
+}
 impl TryFrom<(u8, u8)> for Square {
-    type Error = SquareFromError;
+    type Error = InvalidSquareError;
     fn try_from(value: (u8, u8)) -> Result<Self, Self::Error> {
         Self::new(value.0, value.1)
     }
 }
-impl TryFrom<Result<Square, SquareFromError>> for Square {
-    type Error = SquareFromError;
-    fn try_from(value: Result<Square, SquareFromError>) -> Result<Self, Self::Error> {
+
+impl TryFrom<(u16, u16)> for Square {
+    type Error = InvalidSquareError;
+    fn try_from(value: (u16, u16)) -> Result<Self, Self::Error> {
+        Self::new(value.0.try_into()?, value.1.try_into()?)
+    }
+}
+impl TryFrom<(u32, u32)> for Square {
+    type Error = InvalidSquareError;
+    fn try_from(value: (u32, u32)) -> Result<Self, Self::Error> {
+        Self::new(value.0.try_into()?, value.1.try_into()?)
+    }
+}
+impl TryFrom<(u64, u64)> for Square {
+    type Error = InvalidSquareError;
+    fn try_from(value: (u64, u64)) -> Result<Self, Self::Error> {
+        Self::new(value.0.try_into()?, value.1.try_into()?)
+    }
+}
+impl TryFrom<(i8, i8)> for Square {
+    type Error = InvalidSquareError;
+    fn try_from(value: (i8, i8)) -> Result<Self, Self::Error> {
+        Self::new(value.0.try_into()?, value.1.try_into()?)
+    }
+}
+
+impl TryFrom<(i16, i16)> for Square {
+    type Error = InvalidSquareError;
+    fn try_from(value: (i16, i16)) -> Result<Self, Self::Error> {
+        Self::new(value.0.try_into()?, value.1.try_into()?)
+    }
+}
+impl TryFrom<(i32, i32)> for Square {
+    type Error = InvalidSquareError;
+    fn try_from(value: (i32, i32)) -> Result<Self, Self::Error> {
+        Self::new(value.0.try_into()?, value.1.try_into()?)
+    }
+}
+impl TryFrom<(i64, i64)> for Square {
+    type Error = InvalidSquareError;
+    fn try_from(value: (i64, i64)) -> Result<Self, Self::Error> {
+        Self::new(value.0.try_into()?, value.1.try_into()?)
+    }
+}
+
+impl TryFrom<Result<Square, InvalidSquareError>> for Square {
+    type Error = InvalidSquareError;
+    fn try_from(value: Result<Square, InvalidSquareError>) -> Result<Self, Self::Error> {
         value
     }
 }

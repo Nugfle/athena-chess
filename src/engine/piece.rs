@@ -1,15 +1,46 @@
-use std::usize;
-
-use crate::engine::board::Board;
-use crate::engine::square::{Square, SquareFromError};
+use std::fmt::Display;
+use std::ops::Neg;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Color {
     Black,
     White,
 }
+impl Color {
+    pub fn is_black(&self) -> bool {
+        match self {
+            Color::Black => true,
+            Color::White => false,
+        }
+    }
+    pub fn is_white(&self) -> bool {
+        match self {
+            Color::Black => false,
+            Color::White => true,
+        }
+    }
+}
 
-#[derive(Clone, Copy, Debug)]
+impl Neg for Color {
+    type Output = Self;
+    fn neg(self) -> Self::Output {
+        match self {
+            Self::Black => Self::White,
+            Self::White => Self::Black,
+        }
+    }
+}
+
+impl Display for Color {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Color::Black => write!(f, "Black"),
+            Color::White => write!(f, "White"),
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Piece {
     Pawn(Color),
     Knight(Color),
@@ -19,7 +50,32 @@ pub enum Piece {
     King(Color),
 }
 
+impl Display for Piece {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Piece::Pawn(color) => write!(f, "{} Pawn", color.to_string()),
+            Piece::Knight(color) => write!(f, "{} Knight", color.to_string()),
+            Piece::Bishop(color) => write!(f, "{} Bishop", color.to_string()),
+            Piece::Rook(color) => write!(f, "{} Rook", color.to_string()),
+            Piece::Queen(color) => write!(f, "{} Queen", color.to_string()),
+            Piece::King(color) => write!(f, "{} King", color.to_string()),
+        }
+    }
+}
+
 impl Piece {
+    pub fn is_black(&self) -> bool {
+        self.get_color().is_black()
+    }
+    pub fn is_white(&self) -> bool {
+        self.get_color().is_white()
+    }
+    pub fn is_king(&self) -> bool {
+        match self {
+            Piece::King(_) => true,
+            _ => false,
+        }
+    }
     pub fn get_color(&self) -> Color {
         match self {
             Piece::Pawn(color) => *color,
@@ -30,257 +86,24 @@ impl Piece {
             Piece::King(color) => *color,
         }
     }
-    pub fn get_movable_squares(&self, starting_square: &Square, board: &Board) -> Vec<Square> {
+    pub fn get_value(&self) -> u8 {
         match self {
-            Piece::Pawn(Color::Black) => self.black_pawn_movable_squares(starting_square, board),
-            Piece::Pawn(Color::White) => self.white_pawn_movable_squares(starting_square, board),
-            Piece::Knight(_) => self.knight_movable_squares(starting_square, board),
-            Piece::Bishop(_) => self.bishop_movable_squares(starting_square, board),
-            Piece::Rook(_) => self.rook_movable_squares(starting_square, board),
-            Piece::Queen(_) => self.queen_movable_squares(starting_square, board),
-            Piece::King(_) => self.king_movable_squares(starting_square, board),
+            Piece::Pawn(_) => 1,
+            Piece::Knight(_) => 3,
+            Piece::Bishop(_) => 3,
+            Piece::Rook(_) => 5,
+            Piece::Queen(_) => 8,
+            Piece::King(_) => 0,
         }
     }
-
-    fn push_square_checked(&self, board: &Board, square_result: Result<Square, SquareFromError>, blocked: &mut bool, movable: &mut Vec<Square>) {
-        if !*blocked {
-            match board.get_piece_on_square(square_result) {
-                Ok(Some(piece)) => {
-                    if piece.get_color() != self.get_color() {
-                        movable.push(square_result.unwrap());
-                    }
-                    *blocked = true;
-                }
-                Ok(None) => movable.push(square_result.unwrap()),
-                Err(_) => *blocked = true,
-            }
+    pub fn chess_notation(&self) -> &'static str {
+        match self {
+            Piece::Pawn(_) => "",
+            Piece::Knight(_) => "N",
+            Piece::Bishop(_) => "B",
+            Piece::Rook(_) => "R",
+            Piece::Queen(_) => "Q",
+            Piece::King(_) => "K",
         }
-    }
-    fn black_pawn_movable_squares(&self, position: &Square, board: &Board) -> Vec<Square> {
-        let mut movable = Vec::new();
-        if let Ok(false) = board.square_is_occupied((position.get_horizontal(), position.get_vertical() - 1)) {
-            movable.push(Square::new(position.get_horizontal(), position.get_vertical() - 1).unwrap());
-        }
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal() - 1, position.get_vertical() - 1),
-            &mut false,
-            &mut movable,
-        );
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal() + 1, position.get_vertical() - 1),
-            &mut false,
-            &mut movable,
-        );
-        movable
-    }
-    fn white_pawn_movable_squares(&self, position: &Square, board: &Board) -> Vec<Square> {
-        let mut movable = Vec::new();
-        if let Ok(false) = board.square_is_occupied((position.get_horizontal(), position.get_vertical() + 1)) {
-            movable.push(Square::new(position.get_horizontal(), position.get_vertical() + 1).unwrap());
-        }
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal() - 1, position.get_vertical() + 1),
-            &mut false,
-            &mut movable,
-        );
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal() + 1, position.get_vertical() + 1),
-            &mut false,
-            &mut movable,
-        );
-        movable
-    }
-    fn knight_movable_squares(&self, position: &Square, board: &Board) -> Vec<Square> {
-        let mut movable = Vec::new();
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal() + 2, position.get_vertical() + 1),
-            &mut false,
-            &mut movable,
-        );
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal() + 2, position.get_vertical() - 1),
-            &mut false,
-            &mut movable,
-        );
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal() - 2, position.get_vertical() + 1),
-            &mut false,
-            &mut movable,
-        );
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal() - 2, position.get_vertical() - 1),
-            &mut false,
-            &mut movable,
-        );
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal() + 1, position.get_vertical() + 2),
-            &mut false,
-            &mut movable,
-        );
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal() + 1, position.get_vertical() - 2),
-            &mut false,
-            &mut movable,
-        );
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal() - 1, position.get_vertical() + 2),
-            &mut false,
-            &mut movable,
-        );
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal() - 1, position.get_vertical() - 2),
-            &mut false,
-            &mut movable,
-        );
-        movable
-    }
-    fn rook_movable_squares(&self, position: &Square, board: &Board) -> Vec<Square> {
-        let mut movable = Vec::new();
-        let mut blocked_hor_neg = false;
-        let mut blocked_hor_pos = false;
-        let mut blocked_ver_neg = false;
-        let mut blocked_ver_pos = false;
-
-        for i in position
-            .get_vertical()
-            .max(position.get_horizontal())
-            .max(position.get_vertical().abs_diff(7))
-            .max(position.get_horizontal().abs_diff(7))..0
-        {
-            self.push_square_checked(
-                board,
-                Square::new(position.get_horizontal() - i, position.get_vertical()),
-                &mut blocked_hor_neg,
-                &mut movable,
-            );
-            self.push_square_checked(
-                board,
-                Square::new(position.get_horizontal() + i, position.get_vertical()),
-                &mut blocked_hor_pos,
-                &mut movable,
-            );
-            self.push_square_checked(
-                board,
-                Square::new(position.get_horizontal(), position.get_vertical() - i),
-                &mut blocked_ver_neg,
-                &mut movable,
-            );
-            self.push_square_checked(
-                board,
-                Square::new(position.get_horizontal(), position.get_vertical() + i),
-                &mut blocked_ver_pos,
-                &mut movable,
-            );
-        }
-        movable
-    }
-    fn bishop_movable_squares(&self, position: &Square, board: &Board) -> Vec<Square> {
-        let mut movable = Vec::new();
-        let mut blocked_neg_neg = false;
-        let mut blocked_neg_pos = false;
-        let mut blocked_pos_neg = false;
-        let mut blocked_pos_pos = false;
-
-        for i in position
-            .get_vertical()
-            .max(position.get_horizontal())
-            .max(position.get_vertical().abs_diff(7))
-            .max(position.get_horizontal().abs_diff(7))..0
-        {
-            self.push_square_checked(
-                board,
-                Square::new(position.get_horizontal() - i, position.get_vertical() - i),
-                &mut blocked_neg_neg,
-                &mut movable,
-            );
-            self.push_square_checked(
-                board,
-                Square::new(position.get_horizontal() + i, position.get_vertical() - i),
-                &mut blocked_pos_neg,
-                &mut movable,
-            );
-            self.push_square_checked(
-                board,
-                Square::new(position.get_horizontal() - i, position.get_vertical() + i),
-                &mut blocked_neg_pos,
-                &mut movable,
-            );
-            self.push_square_checked(
-                board,
-                Square::new(position.get_horizontal() + i, position.get_vertical() + i),
-                &mut blocked_pos_pos,
-                &mut movable,
-            );
-        }
-        movable
-    }
-    fn queen_movable_squares(&self, position: &Square, board: &Board) -> Vec<Square> {
-        let mut movable = self.rook_movable_squares(position, board);
-        movable.append(&mut self.bishop_movable_squares(position, board));
-        movable
-    }
-    fn king_movable_squares(&self, position: &Square, board: &Board) -> Vec<Square> {
-        let mut movable = Vec::new();
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal() - 1, position.get_vertical()),
-            &mut false,
-            &mut movable,
-        );
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal() + 1, position.get_vertical()),
-            &mut false,
-            &mut movable,
-        );
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal(), position.get_vertical() - 1),
-            &mut false,
-            &mut movable,
-        );
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal(), position.get_vertical() + 1),
-            &mut false,
-            &mut movable,
-        );
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal() - 1, position.get_vertical() - 1),
-            &mut false,
-            &mut movable,
-        );
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal() - 1, position.get_vertical() + 1),
-            &mut false,
-            &mut movable,
-        );
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal() + 1, position.get_vertical() - 1),
-            &mut false,
-            &mut movable,
-        );
-        self.push_square_checked(
-            board,
-            Square::new(position.get_horizontal() + 1, position.get_vertical() + 1),
-            &mut false,
-            &mut movable,
-        );
-        movable
     }
 }
