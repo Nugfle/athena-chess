@@ -1,10 +1,11 @@
 use std::fmt::Display;
 
-use crate::engine::{
+use super::{
     piece::Piece,
     square::{InvalidSquareError, Square},
 };
 
+#[derive(Debug, Clone)]
 pub struct Move {
     piece: Piece,
     from: Square,

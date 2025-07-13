@@ -106,4 +106,15 @@ impl Piece {
             Piece::King(_) => "K",
         }
     }
+
+    pub fn short_name(&self) -> &'static str {
+        match self {
+            Piece::Pawn(_) => "P",
+            Piece::Knight(_) => "N",
+            Piece::Bishop(_) => "B",
+            Piece::Rook(_) => "R",
+            Piece::Queen(_) => "Q",
+            Piece::King(_) => "K",
+        }
+    }
 }
