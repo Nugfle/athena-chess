@@ -134,4 +134,48 @@ impl Board {
         self.board[to.vertical() as usize][from.horizontal() as usize] =
             std::mem::take(&mut self.board[from.vertical() as usize][from.horizontal() as usize]);
     }
+
+    pub fn get_pieces_of_color(&self, color: Color) -> Vec<(&Piece, Square)> {
+        let mut pieces = Vec::new();
+        for (v, row) in self.board.iter().enumerate() {
+            for (h, square) in row.iter().enumerate() {
+                match square {
+                    Some(p) => {
+                        if p.get_color() == color {
+                            pieces.push((p, Square::new(h as u8, v as u8).unwrap()));
+                        }
+                    }
+                    None => {}
+                }
+            }
+        }
+        pieces
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn test_get_pieces_of_color() {
+        let b = Board::init();
+        let black_pieces = b.get_pieces_of_color(Color::Black);
+        assert!(black_pieces.contains(&(&Piece::King(Color::Black), "e8".try_into().unwrap())));
+        assert!(black_pieces.contains(&(&Piece::Queen(Color::Black), "d8".try_into().unwrap())));
+        assert!(black_pieces.contains(&(&Piece::Bishop(Color::Black), "c8".try_into().unwrap())));
+        assert!(black_pieces.contains(&(&Piece::Bishop(Color::Black), "f8".try_into().unwrap())));
+        assert!(black_pieces.contains(&(&Piece::Knight(Color::Black), "g8".try_into().unwrap())));
+        assert!(black_pieces.contains(&(&Piece::Knight(Color::Black), "b8".try_into().unwrap())));
+        assert!(black_pieces.contains(&(&Piece::Rook(Color::Black), "h8".try_into().unwrap())));
+        assert!(black_pieces.contains(&(&Piece::Rook(Color::Black), "a8".try_into().unwrap())));
+
+        assert!(black_pieces.contains(&(&Piece::Pawn(Color::Black), "a7".try_into().unwrap())));
+        assert!(black_pieces.contains(&(&Piece::Pawn(Color::Black), "b7".try_into().unwrap())));
+        assert!(black_pieces.contains(&(&Piece::Pawn(Color::Black), "c7".try_into().unwrap())));
+        assert!(black_pieces.contains(&(&Piece::Pawn(Color::Black), "d7".try_into().unwrap())));
+        assert!(black_pieces.contains(&(&Piece::Pawn(Color::Black), "e7".try_into().unwrap())));
+        assert!(black_pieces.contains(&(&Piece::Pawn(Color::Black), "f7".try_into().unwrap())));
+        assert!(black_pieces.contains(&(&Piece::Pawn(Color::Black), "g7".try_into().unwrap())));
+        assert!(black_pieces.contains(&(&Piece::Pawn(Color::Black), "h7".try_into().unwrap())));
+    }
 }
