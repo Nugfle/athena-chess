@@ -1,6 +1,7 @@
 use log::error;
 use std::fmt::Display;
 use std::hash::Hash;
+use std::str::FromStr;
 use thiserror::Error;
 
 #[derive(Error, Debug, Clone)]
@@ -13,11 +14,12 @@ pub enum InvalidSquareError {
     InvalidLiteral { literal: String },
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Square {
     horizontal: u8,
     vertical: u8,
 }
+
 impl Hash for Square {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         state.write_u8(self.vertical * 8 + self.horizontal); // ToDo: Test whether >>3 is faster
@@ -41,9 +43,9 @@ impl Square {
     }
 }
 
-impl TryFrom<&str> for Square {
-    type Error = InvalidSquareError;
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
+impl FromStr for Square {
+    type Err = InvalidSquareError;
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
         if value.len() != 2 {
             return Err(InvalidSquareError::InvalidLiteralLength {
                 literal: value.to_string(),

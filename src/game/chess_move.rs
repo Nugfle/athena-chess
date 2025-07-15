@@ -1,11 +1,13 @@
-use std::fmt::Display;
+use std::{fmt::Display, str::FromStr};
+
+use crate::game::error::ChessError;
 
 use super::{
     piece::Piece,
     square::{InvalidSquareError, Square},
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Move {
     piece: Piece,
     from: Square,
@@ -20,12 +22,26 @@ impl Display for Move {
         write!(
             f,
             "{}{}{}{}{}",
-            self.piece.chess_notation(),
+            if self.takes() && self.piece.is_pawn() {
+                self.from.to_string().chars().nth(0).unwrap().to_string()
+            } else {
+                self.piece.chess_notation().to_string()
+            },
             if self.ambigous { self.from.to_string() } else { "".to_string() },
             if self.takes { "x" } else { "" },
             self.to.to_string(),
             if self.check { "#" } else { "" },
         )
+    }
+}
+
+impl FromStr for Move {
+    type Err = ChessError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut m = Self::default();
+        s.contains("x").then(|| m.takes = true);
+        m.to = s.split("x").nth(1).unwrap().parse::<Square>()?;
+        Ok(m)
     }
 }
 

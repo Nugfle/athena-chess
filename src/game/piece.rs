@@ -50,6 +50,12 @@ pub enum Piece {
     King(Color),
 }
 
+impl Default for Piece {
+    fn default() -> Self {
+        Self::Pawn(Color::White)
+    }
+}
+
 impl Display for Piece {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -73,6 +79,12 @@ impl Piece {
     pub fn is_king(&self) -> bool {
         match self {
             Piece::King(_) => true,
+            _ => false,
+        }
+    }
+    pub fn is_pawn(&self) -> bool {
+        match self {
+            Piece::Pawn(_) => true,
             _ => false,
         }
     }
