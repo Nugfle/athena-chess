@@ -1,11 +1,13 @@
 use crate::game::board::Board;
 use crate::game::piece::{Color, Piece};
-use crate::game::square::Square;
+use crate::game::square::*;
 use colored::Colorize;
 use core::fmt::Display;
+use std::u16;
 
 #[derive(Debug, Clone)]
 pub struct ArrayBoard {
+    board: [[Piece;8];8],
     /// # Order
     /// 0 - King 
     /// 1 - Queen
@@ -14,7 +16,9 @@ pub struct ArrayBoard {
     /// 6,7 - b,g Knight
     /// 8..15 - a..h Pawn
     white_pieces: [Square; 16],
-    white_flags: u16,
+    white_pieces_alive: u16,
+    white_promotions: u8,
+    white_controlled_squares: Vec<Square>,
     /// # Order
     /// 0 - King 
     /// 1 - Queen
@@ -23,7 +27,9 @@ pub struct ArrayBoard {
     /// 6,7 - b,g Knight
     /// 8..15 - a..h Pawn
     black_pieces: [Square; 16],
-    black_flags: u16,
+    black_pieces_alive: u16,
+    black_promotions: u8,
+    black_controlled_squares: Vec<Square>,
 }
 
 impl Display for ArrayBoard {
@@ -65,9 +71,11 @@ impl Default for ArrayBoard {
     /// an empty board, use `init()` to set up all the pieces
     fn default() -> Self {
         Self {
-            board: [[None; 8]; 8],
-            white_pieces: [None; 16],
-            black_pieces: [None; 16],
+
+            white_pieces: [*e1,*d1, *a1, *h1, *c1, *f1, *b1, *g1, *a2, *b2, *c2, *d2, *e2, *f2, *g2, *h2 ],
+            white_flags: u16::MAX,
+            black_pieces: [*e8,*d8, *a8, *h8, *c8, *f8, *b8, *g8, *a7, *b7, *c7, *d7, *e7, *f7, *g7, *h7 ],
+            black_flags: u16::MAX,
         }
     }
 }
