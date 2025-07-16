@@ -2,10 +2,7 @@ use std::{fmt::Display, str::FromStr};
 
 use crate::game::error::ChessError;
 
-use super::{
-    piece::Piece,
-    square::{InvalidSquareError, Square},
-};
+use super::{piece::Piece, square::Square};
 
 #[derive(Debug, Clone, Default)]
 pub struct Move {
@@ -27,7 +24,11 @@ impl Display for Move {
             } else {
                 self.piece.chess_notation().to_string()
             },
-            if self.ambigous { self.from.to_string() } else { "".to_string() },
+            if self.ambigous {
+                self.from.to_string()
+            } else {
+                "".to_string()
+            },
             if self.takes { "x" } else { "" },
             self.to.to_string(),
             if self.check { "#" } else { "" },
@@ -46,18 +47,22 @@ impl FromStr for Move {
 }
 
 impl Move {
-    pub fn new<T>(from: T, to: T, piece: Piece, takes: bool, check: bool, ambigous: bool) -> Result<Self, InvalidSquareError>
-    where
-        T: TryInto<Square, Error = InvalidSquareError>,
-    {
-        Ok(Self {
+    pub fn new(
+        from: Square,
+        to: Square,
+        piece: Piece,
+        takes: bool,
+        check: bool,
+        ambigous: bool,
+    ) -> Self {
+        Self {
             piece,
-            from: from.try_into()?,
-            to: to.try_into()?,
+            from,
+            to,
             takes,
             check,
             ambigous,
-        })
+        }
     }
     pub fn get_from(&self) -> Square {
         self.from
@@ -74,7 +79,7 @@ impl Move {
     pub fn takes(&self) -> bool {
         self.takes
     }
-    pub fn ambigous(&self) -> bool {
+    pub fn is_ambigous(&self) -> bool {
         self.ambigous
     }
 }

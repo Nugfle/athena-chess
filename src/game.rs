@@ -6,6 +6,7 @@ use piece::Color;
 
 use crate::game::{piece::Piece, square::Square};
 
+mod array_board;
 mod board;
 mod chess_move;
 mod error;
@@ -15,29 +16,41 @@ mod square;
 /// the representation of a games state, containing all the moves made together with the active color
 /// and current state of the Board.
 #[derive(Debug, Clone)]
-pub struct Game {
+pub struct Game<T>
+where
+    T: Sized + Board,
+{
     moves: Vec<Move>,
     turn: Color,
-    board: Board,
+    board: T,
 }
 
-impl Display for Game {
+impl<T> Display for Game<T>
+where
+    T: Sized + Board + Display,
+{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.board.to_string())
     }
 }
 
-impl Game {
+impl<T> Game<T>
+where
+    T: Sized + Board,
+{
     pub fn new() -> Self {
         return Self {
             moves: Vec::new(),
             turn: Color::White,
-            board: Board::init(),
+            board: T::init(),
         };
     }
 
     pub fn get_legal_moves(&self) -> Vec<Move> {
-        let pieces = self.board.get_pieces_of_color(self.turn);
+        let pieces = match self.turn {
+            Color::Black => self.board.get_black_pieces(),
+            Color::White => self.board.get_white_pieces(),
+        };
         let mut moves = Vec::new();
         for (piece, square) in pieces {
             let mut m = match piece {

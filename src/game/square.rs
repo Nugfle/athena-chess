@@ -1,18 +1,7 @@
+use crate::game::error::InvalidSquareError;
 use log::error;
 use std::fmt::Display;
-use std::hash::Hash;
 use std::str::FromStr;
-use thiserror::Error;
-
-#[derive(Error, Debug, Clone)]
-pub enum InvalidSquareError {
-    #[error("Can't create Square, out of bounds: ({h}, {v})")]
-    OutOfBounds { h: u8, v: u8 },
-    #[error("The Literal: '{literal}' is not of lenght 2: {length}")]
-    InvalidLiteralLength { literal: String, length: usize },
-    #[error("The Literal: '{literal}' is not valid chess notation for a square")]
-    InvalidLiteral { literal: String },
-}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Square {
@@ -20,18 +9,18 @@ pub struct Square {
     vertical: u8,
 }
 
-impl Hash for Square {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        state.write_u8(self.vertical * 8 + self.horizontal); // ToDo: Test whether >>3 is faster
-    }
-}
-
 impl Square {
     pub fn new(horizontal: u8, vertical: u8) -> Result<Self, InvalidSquareError> {
         if horizontal >= 8 || vertical >= 8 {
-            Err(InvalidSquareError::OutOfBounds { h: horizontal, v: vertical })
+            Err(InvalidSquareError::OutOfBounds {
+                h: horizontal,
+                v: vertical,
+            })
         } else {
-            Ok(Self { horizontal, vertical })
+            Ok(Self {
+                horizontal,
+                vertical,
+            })
         }
     }
 
@@ -61,7 +50,11 @@ impl FromStr for Square {
             'f' => 5,
             'g' => 6,
             'h' => 7,
-            _ => return Err(InvalidSquareError::InvalidLiteral { literal: value.to_string() }),
+            _ => {
+                return Err(InvalidSquareError::InvalidLiteral {
+                    literal: value.to_string(),
+                });
+            }
         };
         let vertical = match value.chars().nth(1).unwrap() {
             '1' => 0,
@@ -72,9 +65,16 @@ impl FromStr for Square {
             '6' => 5,
             '7' => 6,
             '8' => 7,
-            _ => return Err(InvalidSquareError::InvalidLiteral { literal: value.to_string() }),
+            _ => {
+                return Err(InvalidSquareError::InvalidLiteral {
+                    literal: value.to_string(),
+                });
+            }
         };
-        Ok(Self { horizontal, vertical })
+        Ok(Self {
+            horizontal,
+            vertical,
+        })
     }
 }
 
