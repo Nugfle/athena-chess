@@ -1,132 +1,107 @@
 use std::fmt::Display;
-use std::ops::Neg;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Color {
     Black,
     White,
 }
-impl Color {
-    pub fn is_black(&self) -> bool {
-        match self {
-            Color::Black => true,
-            Color::White => false,
-        }
-    }
-    pub fn is_white(&self) -> bool {
-        match self {
-            Color::Black => false,
-            Color::White => true,
-        }
-    }
-}
-
-impl Neg for Color {
-    type Output = Self;
-    fn neg(self) -> Self::Output {
-        match self {
-            Self::Black => Self::White,
-            Self::White => Self::Black,
-        }
-    }
-}
-
-impl Display for Color {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Color::Black => write!(f, "Black"),
-            Color::White => write!(f, "White"),
-        }
-    }
-}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[repr(u8)]
 pub enum Piece {
-    Pawn(Color),
-    Knight(Color),
-    Bishop(Color),
-    Rook(Color),
-    Queen(Color),
-    King(Color),
+    WhitePawn = 1,
+    WhiteKnight = 2,
+    WhiteBishop = 3,
+    WhiteRook = 4,
+    WhiteQueen = 5,
+    WhiteKing = 6,
+    BlackPawn = 7,
+    BlackKnight = 8,
+    BlackBishop = 9,
+    BlackRook = 10,
+    BlackQueen = 11,
+    BlackKing = 12,
 }
 
 impl Default for Piece {
     fn default() -> Self {
-        Self::Pawn(Color::White)
+        Self::WhitePawn
     }
 }
 
 impl Display for Piece {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Piece::Pawn(color) => write!(f, "{} Pawn", color.to_string()),
-            Piece::Knight(color) => write!(f, "{} Knight", color.to_string()),
-            Piece::Bishop(color) => write!(f, "{} Bishop", color.to_string()),
-            Piece::Rook(color) => write!(f, "{} Rook", color.to_string()),
-            Piece::Queen(color) => write!(f, "{} Queen", color.to_string()),
-            Piece::King(color) => write!(f, "{} King", color.to_string()),
+            Piece::WhitePawn => write!(f, "White Pawn"),
+            Piece::WhiteKnight => write!(f, "White Knight"),
+            Piece::WhiteBishop => write!(f, "White Bishop"),
+            Piece::WhiteRook => write!(f, "Whit Rook"),
+            Piece::WhiteQueen => write!(f, "White Queen"),
+            Piece::WhiteKing => write!(f, "White King"),
+            Piece::BlackPawn => write!(f, "Black Pawn"),
+            Piece::BlackKnight => write!(f, "Black Knight"),
+            Piece::BlackBishop => write!(f, "Black Bishop"),
+            Piece::BlackRook => write!(f, "Black Rook"),
+            Piece::BlackQueen => write!(f, "Black Queen"),
+            Piece::BlackKing => write!(f, "Black King"),
         }
     }
 }
 
 impl Piece {
     pub fn is_black(&self) -> bool {
-        self.get_color().is_black()
+        match self {
+            Self::BlackPawn | Self::BlackKnight | Self::BlackBishop | Self::BlackRook | Self::BlackQueen | Self::BlackKing => true,
+            _ => false,
+        }
     }
     pub fn is_white(&self) -> bool {
-        self.get_color().is_white()
+        match self {
+            Self::WhitePawn | Self::WhiteKnight | Self::WhiteBishop | Self::WhiteRook | Self::WhiteQueen | Self::WhiteKing => true,
+            _ => false,
+        }
     }
     pub fn is_king(&self) -> bool {
         match self {
-            Piece::King(_) => true,
+            Piece::WhiteKing | Piece::BlackKing => true,
             _ => false,
         }
     }
     pub fn is_pawn(&self) -> bool {
         match self {
-            Piece::Pawn(_) => true,
+            Piece::WhitePawn | Piece::BlackPawn => true,
             _ => false,
-        }
-    }
-    pub fn get_color(&self) -> Color {
-        match self {
-            Piece::Pawn(color) => *color,
-            Piece::Knight(color) => *color,
-            Piece::Bishop(color) => *color,
-            Piece::Rook(color) => *color,
-            Piece::Queen(color) => *color,
-            Piece::King(color) => *color,
         }
     }
     pub fn get_value(&self) -> u8 {
         match self {
-            Piece::Pawn(_) => 1,
-            Piece::Knight(_) => 3,
-            Piece::Bishop(_) => 3,
-            Piece::Rook(_) => 5,
-            Piece::Queen(_) => 8,
-            Piece::King(_) => 0,
+            Piece::WhitePawn | Piece::BlackPawn => 1,
+            Piece::WhiteKnight | Piece::BlackKnight => 3,
+            Piece::WhiteBishop | Piece::BlackBishop => 3,
+            Piece::WhiteRook | Piece::BlackRook => 5,
+            Piece::WhiteQueen | Piece::BlackQueen => 8,
+            Piece::WhiteKing | Piece::BlackKing => 0,
         }
     }
     pub fn chess_notation(&self) -> &'static str {
         match self {
-            Piece::Pawn(_) => "",
-            Piece::Knight(_) => "N",
-            Piece::Bishop(_) => "B",
-            Piece::Rook(_) => "R",
-            Piece::Queen(_) => "Q",
-            Piece::King(_) => "K",
+            Piece::WhitePawn | Piece::BlackPawn => "",
+            Piece::WhiteKnight | Piece::BlackKnight => "K",
+            Piece::WhiteBishop | Piece::BlackBishop => "B",
+            Piece::WhiteRook | Piece::BlackRook => "R",
+            Piece::WhiteQueen | Piece::BlackQueen => "Q",
+            Piece::WhiteKing | Piece::BlackKing => "K",
         }
     }
 
     pub fn short_name(&self) -> &'static str {
         match self {
-            Piece::Pawn(_) => "P",
-            Piece::Knight(_) => "N",
-            Piece::Bishop(_) => "B",
-            Piece::Rook(_) => "R",
-            Piece::Queen(_) => "Q",
-            Piece::King(_) => "K",
+            Piece::WhitePawn | Piece::BlackPawn => "P",
+            Piece::WhiteKnight | Piece::BlackKnight => "K",
+            Piece::WhiteBishop | Piece::BlackBishop => "B",
+            Piece::WhiteRook | Piece::BlackRook => "R",
+            Piece::WhiteQueen | Piece::BlackQueen => "Q",
+            Piece::WhiteKing | Piece::BlackKing => "K",
         }
     }
 }

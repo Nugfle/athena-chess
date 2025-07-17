@@ -1,4 +1,4 @@
-use super::piece::{Color, Piece};
+use super::piece::Piece;
 use super::square::Square;
 
 pub trait Board: Default {
@@ -15,41 +15,41 @@ pub trait Board: Default {
 
     fn init() -> Self {
         let mut board = Self::default();
-        board.put_piece("e1".parse().unwrap(), Piece::King(Color::White));
-        board.put_piece("d1".parse().unwrap(), Piece::Queen(Color::White));
-        board.put_piece("c1".parse().unwrap(), Piece::Bishop(Color::White));
-        board.put_piece("f1".parse().unwrap(), Piece::Bishop(Color::White));
-        board.put_piece("b1".parse().unwrap(), Piece::Knight(Color::White));
-        board.put_piece("g1".parse().unwrap(), Piece::Knight(Color::White));
-        board.put_piece("h1".parse().unwrap(), Piece::Rook(Color::White));
-        board.put_piece("a1".parse().unwrap(), Piece::Rook(Color::White));
+        board.put_piece("e1".parse().unwrap(), Piece::WhiteKing);
+        board.put_piece("d1".parse().unwrap(), Piece::WhiteQueen);
+        board.put_piece("c1".parse().unwrap(), Piece::WhiteBishop);
+        board.put_piece("f1".parse().unwrap(), Piece::WhiteBishop);
+        board.put_piece("b1".parse().unwrap(), Piece::WhiteKnight);
+        board.put_piece("g1".parse().unwrap(), Piece::WhiteKnight);
+        board.put_piece("h1".parse().unwrap(), Piece::WhiteRook);
+        board.put_piece("a1".parse().unwrap(), Piece::WhiteRook);
 
-        board.put_piece("e8".parse().unwrap(), Piece::King(Color::Black));
-        board.put_piece("d8".parse().unwrap(), Piece::Queen(Color::Black));
-        board.put_piece("c8".parse().unwrap(), Piece::Bishop(Color::Black));
-        board.put_piece("f8".parse().unwrap(), Piece::Bishop(Color::Black));
-        board.put_piece("b8".parse().unwrap(), Piece::Knight(Color::Black));
-        board.put_piece("g8".parse().unwrap(), Piece::Knight(Color::Black));
-        board.put_piece("h8".parse().unwrap(), Piece::Rook(Color::Black));
-        board.put_piece("a8".parse().unwrap(), Piece::Rook(Color::Black));
+        board.put_piece("e8".parse().unwrap(), Piece::BlackKing);
+        board.put_piece("d8".parse().unwrap(), Piece::BlackQueen);
+        board.put_piece("c8".parse().unwrap(), Piece::BlackBishop);
+        board.put_piece("f8".parse().unwrap(), Piece::BlackBishop);
+        board.put_piece("b8".parse().unwrap(), Piece::BlackKnight);
+        board.put_piece("g8".parse().unwrap(), Piece::BlackKnight);
+        board.put_piece("h8".parse().unwrap(), Piece::BlackRook);
+        board.put_piece("a8".parse().unwrap(), Piece::BlackRook);
 
-        board.put_piece("a7".parse().unwrap(), Piece::Pawn(Color::Black));
-        board.put_piece("b7".parse().unwrap(), Piece::Pawn(Color::Black));
-        board.put_piece("c7".parse().unwrap(), Piece::Pawn(Color::Black));
-        board.put_piece("d7".parse().unwrap(), Piece::Pawn(Color::Black));
-        board.put_piece("e7".parse().unwrap(), Piece::Pawn(Color::Black));
-        board.put_piece("f7".parse().unwrap(), Piece::Pawn(Color::Black));
-        board.put_piece("g7".parse().unwrap(), Piece::Pawn(Color::Black));
-        board.put_piece("h7".parse().unwrap(), Piece::Pawn(Color::Black));
+        board.put_piece("a7".parse().unwrap(), Piece::BlackPawn);
+        board.put_piece("b7".parse().unwrap(), Piece::BlackPawn);
+        board.put_piece("c7".parse().unwrap(), Piece::BlackPawn);
+        board.put_piece("d7".parse().unwrap(), Piece::BlackPawn);
+        board.put_piece("e7".parse().unwrap(), Piece::BlackPawn);
+        board.put_piece("f7".parse().unwrap(), Piece::BlackPawn);
+        board.put_piece("g7".parse().unwrap(), Piece::BlackPawn);
+        board.put_piece("h7".parse().unwrap(), Piece::BlackPawn);
 
-        board.put_piece("a2".parse().unwrap(), Piece::Pawn(Color::White));
-        board.put_piece("b2".parse().unwrap(), Piece::Pawn(Color::White));
-        board.put_piece("c2".parse().unwrap(), Piece::Pawn(Color::White));
-        board.put_piece("d2".parse().unwrap(), Piece::Pawn(Color::White));
-        board.put_piece("e2".parse().unwrap(), Piece::Pawn(Color::White));
-        board.put_piece("f2".parse().unwrap(), Piece::Pawn(Color::White));
-        board.put_piece("g2".parse().unwrap(), Piece::Pawn(Color::White));
-        board.put_piece("h2".parse().unwrap(), Piece::Pawn(Color::White));
+        board.put_piece("a2".parse().unwrap(), Piece::WhitePawn);
+        board.put_piece("b2".parse().unwrap(), Piece::WhitePawn);
+        board.put_piece("c2".parse().unwrap(), Piece::WhitePawn);
+        board.put_piece("d2".parse().unwrap(), Piece::WhitePawn);
+        board.put_piece("e2".parse().unwrap(), Piece::WhitePawn);
+        board.put_piece("f2".parse().unwrap(), Piece::WhitePawn);
+        board.put_piece("g2".parse().unwrap(), Piece::WhitePawn);
+        board.put_piece("h2".parse().unwrap(), Piece::WhitePawn);
 
         board
     }

@@ -4,7 +4,7 @@ use board::Board;
 use chess_move::Move;
 use piece::Color;
 
-use crate::game::{piece::Piece, square::Square};
+use crate::game::{array_board::ArrayBoard, square::Square};
 
 mod array_board;
 mod board;
@@ -34,40 +34,30 @@ where
     }
 }
 
-impl<T> Game<T>
-where
-    T: Sized + Board,
-{
+impl Game<ArrayBoard> {
     pub fn new() -> Self {
         return Self {
             moves: Vec::new(),
             turn: Color::White,
-            board: T::init(),
+            board: ArrayBoard::init(),
         };
     }
+}
 
+impl<T> Game<T>
+where
+    T: Sized + Board,
+{
     pub fn get_legal_moves(&self) -> Vec<Move> {
         let pieces = match self.turn {
             Color::Black => self.board.get_black_pieces(),
             Color::White => self.board.get_white_pieces(),
         };
         let mut moves = Vec::new();
-        for (piece, square) in pieces {
-            let mut m = match piece {
-                Piece::Pawn(color) => self.get_legal_moves_pawn(square, color),
-                Piece::Knight(color) => self.get_legal_moves_knight(square, color),
-                Piece::Bishop(color) => self.get_legal_moves_bishop(square, color),
-                Piece::Rook(color) => self.get_legal_moves_rook(square, color),
-                Piece::Queen(color) => self.get_legal_moves_queen(square, color),
-                Piece::King(color) => self.get_legal_moves_king(square, color),
-            };
-            moves.append(&mut m);
-        }
+        todo!("implement the logic go get all legal moves");
         moves
     }
-}
 
-impl Game {
     fn get_legal_moves_pawn(&self, square: Square, color: &Color) -> Vec<Move> {
         let mut moves = Vec::new();
 
