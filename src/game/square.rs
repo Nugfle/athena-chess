@@ -1,75 +1,79 @@
 use crate::game::error::InvalidSquareError;
-use lazy_static::lazy_static;
 use log::error;
 use std::fmt::Display;
 use std::str::FromStr;
 
-lazy_static! {
-    pub static ref a1: Square = "a1".parse().unwrap();
-    pub static ref a2: Square = "a2".parse().unwrap();
-    pub static ref a3: Square = "a3".parse().unwrap();
-    pub static ref a4: Square = "a4".parse().unwrap();
-    pub static ref a5: Square = "a5".parse().unwrap();
-    pub static ref a6: Square = "a6".parse().unwrap();
-    pub static ref a7: Square = "a7".parse().unwrap();
-    pub static ref a8: Square = "a8".parse().unwrap();
-    pub static ref b1: Square = "b1".parse().unwrap();
-    pub static ref b2: Square = "b2".parse().unwrap();
-    pub static ref b3: Square = "b3".parse().unwrap();
-    pub static ref b4: Square = "b4".parse().unwrap();
-    pub static ref b5: Square = "b5".parse().unwrap();
-    pub static ref b6: Square = "b6".parse().unwrap();
-    pub static ref b7: Square = "b7".parse().unwrap();
-    pub static ref b8: Square = "b8".parse().unwrap();
-    pub static ref c1: Square = "c1".parse().unwrap();
-    pub static ref c2: Square = "c2".parse().unwrap();
-    pub static ref c3: Square = "c3".parse().unwrap();
-    pub static ref c4: Square = "c4".parse().unwrap();
-    pub static ref c5: Square = "c5".parse().unwrap();
-    pub static ref c6: Square = "c6".parse().unwrap();
-    pub static ref c7: Square = "c7".parse().unwrap();
-    pub static ref c8: Square = "c8".parse().unwrap();
-    pub static ref d1: Square = "d1".parse().unwrap();
-    pub static ref d2: Square = "d2".parse().unwrap();
-    pub static ref d3: Square = "d3".parse().unwrap();
-    pub static ref d4: Square = "d4".parse().unwrap();
-    pub static ref d5: Square = "d5".parse().unwrap();
-    pub static ref d6: Square = "d6".parse().unwrap();
-    pub static ref d7: Square = "d7".parse().unwrap();
-    pub static ref d8: Square = "d8".parse().unwrap();
-    pub static ref e1: Square = "e1".parse().unwrap();
-    pub static ref e2: Square = "e2".parse().unwrap();
-    pub static ref e3: Square = "e3".parse().unwrap();
-    pub static ref e4: Square = "e4".parse().unwrap();
-    pub static ref e5: Square = "e5".parse().unwrap();
-    pub static ref e6: Square = "e6".parse().unwrap();
-    pub static ref e7: Square = "e7".parse().unwrap();
-    pub static ref e8: Square = "e8".parse().unwrap();
-    pub static ref f1: Square = "f1".parse().unwrap();
-    pub static ref f2: Square = "f2".parse().unwrap();
-    pub static ref f3: Square = "f3".parse().unwrap();
-    pub static ref f4: Square = "f4".parse().unwrap();
-    pub static ref f5: Square = "f5".parse().unwrap();
-    pub static ref f6: Square = "f6".parse().unwrap();
-    pub static ref f7: Square = "f7".parse().unwrap();
-    pub static ref f8: Square = "f8".parse().unwrap();
-    pub static ref g1: Square = "g1".parse().unwrap();
-    pub static ref g2: Square = "g2".parse().unwrap();
-    pub static ref g3: Square = "g3".parse().unwrap();
-    pub static ref g4: Square = "g4".parse().unwrap();
-    pub static ref g5: Square = "g5".parse().unwrap();
-    pub static ref g6: Square = "g6".parse().unwrap();
-    pub static ref g7: Square = "g7".parse().unwrap();
-    pub static ref g8: Square = "g8".parse().unwrap();
-    pub static ref h1: Square = "h1".parse().unwrap();
-    pub static ref h2: Square = "h2".parse().unwrap();
-    pub static ref h3: Square = "h3".parse().unwrap();
-    pub static ref h4: Square = "h4".parse().unwrap();
-    pub static ref h5: Square = "h5".parse().unwrap();
-    pub static ref h6: Square = "h6".parse().unwrap();
-    pub static ref h7: Square = "h7".parse().unwrap();
-    pub static ref h8: Square = "h8".parse().unwrap();
-}
+pub const A1: Square = Square { vertical: 0, horizontal: 0 };
+pub const A2: Square = Square { vertical: 1, horizontal: 0 };
+pub const A3: Square = Square { vertical: 2, horizontal: 0 };
+pub const A4: Square = Square { vertical: 3, horizontal: 0 };
+pub const A5: Square = Square { vertical: 4, horizontal: 0 };
+pub const A6: Square = Square { vertical: 5, horizontal: 0 };
+pub const A7: Square = Square { vertical: 6, horizontal: 0 };
+pub const A8: Square = Square { vertical: 7, horizontal: 0 };
+
+pub const B1: Square = Square { vertical: 0, horizontal: 1 };
+pub const B2: Square = Square { vertical: 1, horizontal: 1 };
+pub const B3: Square = Square { vertical: 2, horizontal: 1 };
+pub const B4: Square = Square { vertical: 3, horizontal: 1 };
+pub const B5: Square = Square { vertical: 4, horizontal: 1 };
+pub const B6: Square = Square { vertical: 5, horizontal: 1 };
+pub const B7: Square = Square { vertical: 6, horizontal: 1 };
+pub const B8: Square = Square { vertical: 7, horizontal: 1 };
+
+pub const C1: Square = Square { vertical: 0, horizontal: 2 };
+pub const C2: Square = Square { vertical: 1, horizontal: 2 };
+pub const C3: Square = Square { vertical: 2, horizontal: 2 };
+pub const C4: Square = Square { vertical: 3, horizontal: 2 };
+pub const C5: Square = Square { vertical: 4, horizontal: 2 };
+pub const C6: Square = Square { vertical: 5, horizontal: 2 };
+pub const C7: Square = Square { vertical: 6, horizontal: 2 };
+pub const C8: Square = Square { vertical: 7, horizontal: 2 };
+
+pub const D1: Square = Square { vertical: 0, horizontal: 3 };
+pub const D2: Square = Square { vertical: 1, horizontal: 3 };
+pub const D3: Square = Square { vertical: 2, horizontal: 3 };
+pub const D4: Square = Square { vertical: 3, horizontal: 3 };
+pub const D5: Square = Square { vertical: 4, horizontal: 3 };
+pub const D6: Square = Square { vertical: 5, horizontal: 3 };
+pub const D7: Square = Square { vertical: 6, horizontal: 3 };
+pub const D8: Square = Square { vertical: 7, horizontal: 3 };
+
+pub const E1: Square = Square { vertical: 0, horizontal: 4 };
+pub const E2: Square = Square { vertical: 1, horizontal: 4 };
+pub const E3: Square = Square { vertical: 2, horizontal: 4 };
+pub const E4: Square = Square { vertical: 3, horizontal: 4 };
+pub const E5: Square = Square { vertical: 4, horizontal: 4 };
+pub const E6: Square = Square { vertical: 5, horizontal: 4 };
+pub const E7: Square = Square { vertical: 6, horizontal: 4 };
+pub const E8: Square = Square { vertical: 7, horizontal: 4 };
+
+pub const F1: Square = Square { vertical: 0, horizontal: 5 };
+pub const F2: Square = Square { vertical: 1, horizontal: 5 };
+pub const F3: Square = Square { vertical: 2, horizontal: 5 };
+pub const F4: Square = Square { vertical: 3, horizontal: 5 };
+pub const F5: Square = Square { vertical: 4, horizontal: 5 };
+pub const F6: Square = Square { vertical: 5, horizontal: 5 };
+pub const F7: Square = Square { vertical: 6, horizontal: 5 };
+pub const F8: Square = Square { vertical: 7, horizontal: 5 };
+
+pub const G1: Square = Square { vertical: 0, horizontal: 6 };
+pub const G2: Square = Square { vertical: 1, horizontal: 6 };
+pub const G3: Square = Square { vertical: 2, horizontal: 6 };
+pub const G4: Square = Square { vertical: 3, horizontal: 6 };
+pub const G5: Square = Square { vertical: 4, horizontal: 6 };
+pub const G6: Square = Square { vertical: 5, horizontal: 6 };
+pub const G7: Square = Square { vertical: 6, horizontal: 6 };
+pub const G8: Square = Square { vertical: 7, horizontal: 6 };
+
+pub const H1: Square = Square { vertical: 0, horizontal: 7 };
+pub const H2: Square = Square { vertical: 1, horizontal: 7 };
+pub const H3: Square = Square { vertical: 2, horizontal: 7 };
+pub const H4: Square = Square { vertical: 3, horizontal: 7 };
+pub const H5: Square = Square { vertical: 4, horizontal: 7 };
+pub const H6: Square = Square { vertical: 5, horizontal: 7 };
+pub const H7: Square = Square { vertical: 6, horizontal: 7 };
+pub const H8: Square = Square { vertical: 7, horizontal: 7 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Square {
@@ -80,15 +84,9 @@ pub struct Square {
 impl Square {
     pub fn new(horizontal: u8, vertical: u8) -> Result<Self, InvalidSquareError> {
         if horizontal >= 8 || vertical >= 8 {
-            Err(InvalidSquareError::OutOfBounds {
-                h: horizontal,
-                v: vertical,
-            })
+            Err(InvalidSquareError::OutOfBounds { h: horizontal, v: vertical })
         } else {
-            Ok(Self {
-                horizontal,
-                vertical,
-            })
+            Ok(Self { horizontal, vertical })
         }
     }
 
@@ -119,9 +117,7 @@ impl FromStr for Square {
             'g' => 6,
             'h' => 7,
             _ => {
-                return Err(InvalidSquareError::InvalidLiteral {
-                    literal: value.to_string(),
-                });
+                return Err(InvalidSquareError::InvalidLiteral { literal: value.to_string() });
             }
         };
         let vertical = match value.chars().nth(1).unwrap() {
@@ -134,15 +130,10 @@ impl FromStr for Square {
             '7' => 6,
             '8' => 7,
             _ => {
-                return Err(InvalidSquareError::InvalidLiteral {
-                    literal: value.to_string(),
-                });
+                return Err(InvalidSquareError::InvalidLiteral { literal: value.to_string() });
             }
         };
-        Ok(Self {
-            horizontal,
-            vertical,
-        })
+        Ok(Self { horizontal, vertical })
     }
 }
 

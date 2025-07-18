@@ -1,3 +1,8 @@
+use colored::Colorize;
+use core::fmt;
+
+use crate::game::square::*;
+
 use super::piece::Piece;
 use super::square::Square;
 
@@ -15,41 +20,41 @@ pub trait Board: Default {
 
     fn init() -> Self {
         let mut board = Self::default();
-        board.put_piece("e1".parse().unwrap(), Piece::WhiteKing);
-        board.put_piece("d1".parse().unwrap(), Piece::WhiteQueen);
-        board.put_piece("c1".parse().unwrap(), Piece::WhiteBishop);
-        board.put_piece("f1".parse().unwrap(), Piece::WhiteBishop);
-        board.put_piece("b1".parse().unwrap(), Piece::WhiteKnight);
-        board.put_piece("g1".parse().unwrap(), Piece::WhiteKnight);
-        board.put_piece("h1".parse().unwrap(), Piece::WhiteRook);
-        board.put_piece("a1".parse().unwrap(), Piece::WhiteRook);
+        board.put_piece(E1, Piece::WhiteKing);
+        board.put_piece(D1, Piece::WhiteQueen);
+        board.put_piece(C1, Piece::WhiteBishop);
+        board.put_piece(F1, Piece::WhiteBishop);
+        board.put_piece(B1, Piece::WhiteKnight);
+        board.put_piece(G1, Piece::WhiteKnight);
+        board.put_piece(H1, Piece::WhiteRook);
+        board.put_piece(A1, Piece::WhiteRook);
 
-        board.put_piece("e8".parse().unwrap(), Piece::BlackKing);
-        board.put_piece("d8".parse().unwrap(), Piece::BlackQueen);
-        board.put_piece("c8".parse().unwrap(), Piece::BlackBishop);
-        board.put_piece("f8".parse().unwrap(), Piece::BlackBishop);
-        board.put_piece("b8".parse().unwrap(), Piece::BlackKnight);
-        board.put_piece("g8".parse().unwrap(), Piece::BlackKnight);
-        board.put_piece("h8".parse().unwrap(), Piece::BlackRook);
-        board.put_piece("a8".parse().unwrap(), Piece::BlackRook);
+        board.put_piece(E8, Piece::BlackKing);
+        board.put_piece(D8, Piece::BlackQueen);
+        board.put_piece(C8, Piece::BlackBishop);
+        board.put_piece(F8, Piece::BlackBishop);
+        board.put_piece(B8, Piece::BlackKnight);
+        board.put_piece(G8, Piece::BlackKnight);
+        board.put_piece(H8, Piece::BlackRook);
+        board.put_piece(A8, Piece::BlackRook);
 
-        board.put_piece("a7".parse().unwrap(), Piece::BlackPawn);
-        board.put_piece("b7".parse().unwrap(), Piece::BlackPawn);
-        board.put_piece("c7".parse().unwrap(), Piece::BlackPawn);
-        board.put_piece("d7".parse().unwrap(), Piece::BlackPawn);
-        board.put_piece("e7".parse().unwrap(), Piece::BlackPawn);
-        board.put_piece("f7".parse().unwrap(), Piece::BlackPawn);
-        board.put_piece("g7".parse().unwrap(), Piece::BlackPawn);
-        board.put_piece("h7".parse().unwrap(), Piece::BlackPawn);
+        board.put_piece(A7, Piece::BlackPawn);
+        board.put_piece(B7, Piece::BlackPawn);
+        board.put_piece(C7, Piece::BlackPawn);
+        board.put_piece(D7, Piece::BlackPawn);
+        board.put_piece(E7, Piece::BlackPawn);
+        board.put_piece(F7, Piece::BlackPawn);
+        board.put_piece(G7, Piece::BlackPawn);
+        board.put_piece(H7, Piece::BlackPawn);
 
-        board.put_piece("a2".parse().unwrap(), Piece::WhitePawn);
-        board.put_piece("b2".parse().unwrap(), Piece::WhitePawn);
-        board.put_piece("c2".parse().unwrap(), Piece::WhitePawn);
-        board.put_piece("d2".parse().unwrap(), Piece::WhitePawn);
-        board.put_piece("e2".parse().unwrap(), Piece::WhitePawn);
-        board.put_piece("f2".parse().unwrap(), Piece::WhitePawn);
-        board.put_piece("g2".parse().unwrap(), Piece::WhitePawn);
-        board.put_piece("h2".parse().unwrap(), Piece::WhitePawn);
+        board.put_piece(A2, Piece::WhitePawn);
+        board.put_piece(B2, Piece::WhitePawn);
+        board.put_piece(C2, Piece::WhitePawn);
+        board.put_piece(D2, Piece::WhitePawn);
+        board.put_piece(E2, Piece::WhitePawn);
+        board.put_piece(F2, Piece::WhitePawn);
+        board.put_piece(G2, Piece::WhitePawn);
+        board.put_piece(H2, Piece::WhitePawn);
 
         board
     }
@@ -60,6 +65,44 @@ pub trait Board: Default {
         let p = self.get_piece_on_square(from);
         self.put_piece_option(to, p);
         self.clear_square(from);
+    }
+
+    fn format_print_board(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        for v in 0..8 {
+            for h in 0..8 {
+                write!(
+                    f,
+                    "{}",
+                    if (v + h) % 2 == 0 {
+                        match self.get_piece_on_square((h, v).try_into().unwrap()) {
+                            None => "   ".normal(),
+                            Some(p) => {
+                                if p.is_black() {
+                                    format!(" {} ", p.short_name()).black()
+                                } else {
+                                    format!(" {} ", p.short_name()).bright_white()
+                                }
+                            }
+                        }
+                        .on_bright_black()
+                    } else {
+                        match self.get_piece_on_square((h, v).try_into().unwrap()) {
+                            None => "   ".normal(),
+                            Some(p) => {
+                                if p.is_black() {
+                                    format!(" {} ", p.short_name()).black()
+                                } else {
+                                    format!(" {} ", p.short_name()).bright_white()
+                                }
+                            }
+                        }
+                        .on_white()
+                    }
+                )?;
+            }
+            write!(f, "\n")?;
+        }
+        Ok(())
     }
 }
 

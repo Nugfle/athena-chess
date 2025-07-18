@@ -19,16 +19,12 @@ impl Display for Move {
         write!(
             f,
             "{}{}{}{}{}",
-            if self.takes() && self.piece.is_pawn() {
+            if self.takes && self.piece.is_pawn() {
                 self.from.to_string().chars().nth(0).unwrap().to_string()
             } else {
                 self.piece.chess_notation().to_string()
             },
-            if self.ambigous {
-                self.from.to_string()
-            } else {
-                "".to_string()
-            },
+            if self.ambigous { self.from.to_string() } else { "".to_string() },
             if self.takes { "x" } else { "" },
             self.to.to_string(),
             if self.check { "#" } else { "" },
@@ -47,14 +43,7 @@ impl FromStr for Move {
 }
 
 impl Move {
-    pub fn new(
-        from: Square,
-        to: Square,
-        piece: Piece,
-        takes: bool,
-        check: bool,
-        ambigous: bool,
-    ) -> Self {
+    pub fn new(from: Square, to: Square, piece: Piece, takes: bool, check: bool, ambigous: bool) -> Self {
         Self {
             piece,
             from,
@@ -63,23 +52,5 @@ impl Move {
             check,
             ambigous,
         }
-    }
-    pub fn get_from(&self) -> Square {
-        self.from
-    }
-    pub fn get_to(&self) -> Square {
-        self.to
-    }
-    pub fn get_piece(&self) -> Piece {
-        self.piece
-    }
-    pub fn is_check(&self) -> bool {
-        self.check
-    }
-    pub fn takes(&self) -> bool {
-        self.takes
-    }
-    pub fn is_ambigous(&self) -> bool {
-        self.ambigous
     }
 }

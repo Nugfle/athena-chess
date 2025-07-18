@@ -1,12 +1,6 @@
 use std::fmt::Display;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Color {
-    Black,
-    White,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Piece {
     WhitePawn = 1,

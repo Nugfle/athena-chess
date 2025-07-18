@@ -21,7 +21,6 @@ where
     T: Sized + Board,
 {
     moves: Vec<Move>,
-    turn: Color,
     board: T,
 }
 
@@ -38,7 +37,6 @@ impl Game<ArrayBoard> {
     pub fn new() -> Self {
         return Self {
             moves: Vec::new(),
-            turn: Color::White,
             board: ArrayBoard::init(),
         };
     }
@@ -49,38 +47,8 @@ where
     T: Sized + Board,
 {
     pub fn get_legal_moves(&self) -> Vec<Move> {
-        let pieces = match self.turn {
-            Color::Black => self.board.get_black_pieces(),
-            Color::White => self.board.get_white_pieces(),
-        };
         let mut moves = Vec::new();
         todo!("implement the logic go get all legal moves");
         moves
-    }
-
-    fn get_legal_moves_pawn(&self, square: Square, color: &Color) -> Vec<Move> {
-        let mut moves = Vec::new();
-
-        return moves;
-    }
-    fn get_legal_moves_knight(&self, square: Square, color: &Color) -> Vec<Move> {
-        let mut moves = Vec::new();
-        return moves;
-    }
-    fn get_legal_moves_bishop(&self, square: Square, color: &Color) -> Vec<Move> {
-        let mut moves = Vec::new();
-        return moves;
-    }
-    fn get_legal_moves_rook(&self, square: Square, color: &Color) -> Vec<Move> {
-        let mut moves = Vec::new();
-        return moves;
-    }
-    fn get_legal_moves_queen(&self, square: Square, color: &Color) -> Vec<Move> {
-        let mut moves = Vec::new();
-        return moves;
-    }
-    fn get_legal_moves_king(&self, square: Square, color: &Color) -> Vec<Move> {
-        let mut moves = Vec::new();
-        return moves;
     }
 }
