@@ -10,12 +10,15 @@ pub trait Board: Default {
     // template methods
     fn get_piece_on_square(&self, square: Square) -> Option<Piece>;
     fn put_piece_option(&mut self, square: Square, piece: Option<Piece>);
-    fn clear_square(&mut self, square: Square);
     fn get_white_pieces(&self) -> [Option<(Piece, Square)>; 16];
     fn get_black_pieces(&self) -> [Option<(Piece, Square)>; 16];
 
     fn put_piece(&mut self, square: Square, piece: Piece) {
         self.put_piece_option(square, Some(piece));
+    }
+
+    fn clear_square(&mut self, square: Square) {
+        self.put_piece_option(square, None);
     }
 
     fn init() -> Self {

@@ -2,7 +2,6 @@ use std::fmt::Display;
 
 use board::Board;
 use chess_move::Move;
-use piece::Color;
 
 use crate::game::{array_board::ArrayBoard, square::Square};
 
