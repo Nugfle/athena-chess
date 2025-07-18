@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{cmp, fmt::Display};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
@@ -20,6 +20,24 @@ pub enum Piece {
 impl Default for Piece {
     fn default() -> Self {
         Self::WhitePawn
+    }
+}
+
+impl PartialOrd for Piece {
+    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
+        if self.is_knight() && other.is_bishop() {
+            Some(cmp::Ordering::Less)
+        } else if self.is_bishop() && other.is_knight() {
+            Some(cmp::Ordering::Greater)
+        } else {
+            Some(self.get_value().cmp(&other.get_value()))
+        }
+    }
+}
+
+impl Ord for Piece {
+    fn cmp(&self, other: &Self) -> cmp::Ordering {
+        return self.partial_cmp(other).unwrap();
     }
 }
 
@@ -61,6 +79,30 @@ impl Piece {
             _ => false,
         }
     }
+    pub fn is_queen(&self) -> bool {
+        match self {
+            Piece::WhiteQueen | Piece::BlackQueen => true,
+            _ => false,
+        }
+    }
+    pub fn is_rook(&self) -> bool {
+        match self {
+            Piece::WhiteRook | Piece::BlackRook => true,
+            _ => false,
+        }
+    }
+    pub fn is_bishop(&self) -> bool {
+        match self {
+            Piece::WhiteBishop | Piece::BlackBishop => true,
+            _ => false,
+        }
+    }
+    pub fn is_knight(&self) -> bool {
+        match self {
+            Piece::WhiteKnight | Piece::BlackKnight => true,
+            _ => false,
+        }
+    }
     pub fn is_pawn(&self) -> bool {
         match self {
             Piece::WhitePawn | Piece::BlackPawn => true,
@@ -74,7 +116,7 @@ impl Piece {
             Piece::WhiteBishop | Piece::BlackBishop => 3,
             Piece::WhiteRook | Piece::BlackRook => 5,
             Piece::WhiteQueen | Piece::BlackQueen => 8,
-            Piece::WhiteKing | Piece::BlackKing => 0,
+            Piece::WhiteKing | Piece::BlackKing => u8::MAX,
         }
     }
     pub fn chess_notation(&self) -> &'static str {

@@ -1,5 +1,6 @@
 use colored::Colorize;
 use core::fmt;
+use std::cmp::Ordering;
 
 use crate::game::square::*;
 
@@ -7,38 +8,50 @@ use super::piece::Piece;
 use super::square::Square;
 
 pub trait Board: Default {
-    // template methods
     fn get_piece_on_square(&self, square: Square) -> Option<Piece>;
     fn put_piece_option(&mut self, square: Square, piece: Option<Piece>);
 
-    fn get_white_pieces(&self) -> [Option<(Piece, Square)>; 16] {
-        let mut i = 0;
-        let mut pieces = [None; 16];
-        for opt in self.get_all_pieces() {
-            if let Some((p, _)) = opt {
-                if p.is_white() {
-                    pieces[i] = opt;
-                    i += 1
-                }
-            }
-        }
-        pieces
-    }
-    fn get_black_pieces(&self) -> [Option<(Piece, Square)>; 16] {
-        let mut i = 0;
-        let mut pieces = [None; 16];
-        for opt in self.get_all_pieces() {
-            if let Some((p, _)) = opt {
-                if p.is_black() {
-                    pieces[i] = opt;
-                    i += 1
+    /// 0..16 are white pieces
+    /// 16..32 are black pieces
+    /// each section starts with the king, the other pieces are unordered
+    fn get_all_pieces(&self) -> [Option<(Piece, Square)>; 32] {
+        let mut i = 1;
+        let mut j = 17;
+        let mut pieces = [None; 32];
+        for v in 0..8 {
+            for h in 0..8 {
+                if let Some(p) = self.get_piece_on_square(Square::new(h, v).unwrap()) {
+                    if p.is_white() {
+                        if p.is_king() {
+                            pieces[0] = Some((p, Square::new(h as u8, v as u8).unwrap()));
+                        } else {
+                            pieces[i] = Some((p, Square::new(h as u8, v as u8).unwrap()));
+                            i += 1;
+                        }
+                    } else {
+                        if p.is_king() {
+                            pieces[16] = Some((p, Square::new(h as u8, v as u8).unwrap()));
+                        } else {
+                            pieces[j] = Some((p, Square::new(h as u8, v as u8).unwrap()));
+                            j += 1;
+                        }
+                    }
                 }
             }
         }
         pieces
     }
 
-    fn get_all_pieces(&self) -> [Option<(Piece, Square)>; 32];
+    /// get all active white pieces
+    /// 0 - is always King, all following pieces are in non specific order
+    fn get_white_pieces(&self) -> [Option<(Piece, Square)>; 16] {
+        self.get_all_pieces()[0..16].try_into().unwrap()
+    }
+    /// get all active black pieces
+    /// 0 - is always King, all following pieces are in non specific order
+    fn get_black_pieces(&self) -> [Option<(Piece, Square)>; 16] {
+        self.get_all_pieces()[16..].try_into().unwrap()
+    }
 
     fn put_piece(&mut self, square: Square, piece: Piece) {
         self.put_piece_option(square, Some(piece));

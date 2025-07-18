@@ -46,8 +46,22 @@ where
     T: Sized + Board,
 {
     pub fn get_legal_moves(&self) -> Vec<Move> {
-        let mut moves = Vec::new();
-        todo!("implement the logic go get all legal moves");
-        moves
+        // 0 - white 1 - black
+        let turn = self.moves.len() % 2;
+        let mut legal_moves = Vec::new();
+        let pieces = if turn == 0 {
+            self.board.get_white_pieces()
+        } else {
+            self.board.get_black_pieces()
+        };
+
+        legal_moves
+    }
+
+    pub fn white_is_check(&self) -> bool {
+        todo!()
+    }
+    pub fn black_is_check(&self) -> bool {
+        todo!()
     }
 }
