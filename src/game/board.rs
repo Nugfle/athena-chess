@@ -10,8 +10,35 @@ pub trait Board: Default {
     // template methods
     fn get_piece_on_square(&self, square: Square) -> Option<Piece>;
     fn put_piece_option(&mut self, square: Square, piece: Option<Piece>);
-    fn get_white_pieces(&self) -> [Option<(Piece, Square)>; 16];
-    fn get_black_pieces(&self) -> [Option<(Piece, Square)>; 16];
+
+    fn get_white_pieces(&self) -> [Option<(Piece, Square)>; 16] {
+        let mut i = 0;
+        let mut pieces = [None; 16];
+        for opt in self.get_all_pieces() {
+            if let Some((p, _)) = opt {
+                if p.is_white() {
+                    pieces[i] = opt;
+                    i += 1
+                }
+            }
+        }
+        pieces
+    }
+    fn get_black_pieces(&self) -> [Option<(Piece, Square)>; 16] {
+        let mut i = 0;
+        let mut pieces = [None; 16];
+        for opt in self.get_all_pieces() {
+            if let Some((p, _)) = opt {
+                if p.is_black() {
+                    pieces[i] = opt;
+                    i += 1
+                }
+            }
+        }
+        pieces
+    }
+
+    fn get_all_pieces(&self) -> [Option<(Piece, Square)>; 32];
 
     fn put_piece(&mut self, square: Square, piece: Piece) {
         self.put_piece_option(square, Some(piece));
@@ -19,6 +46,14 @@ pub trait Board: Default {
 
     fn clear_square(&mut self, square: Square) {
         self.put_piece_option(square, None);
+    }
+
+    /// Moves whatever is at *from* to *to*.
+    /// Note that this method doesn't care, whether the move is valid or not.
+    fn make_move(&mut self, from: Square, to: Square) {
+        let p = self.get_piece_on_square(from);
+        self.put_piece_option(to, p);
+        self.clear_square(from);
     }
 
     fn init() -> Self {
@@ -62,14 +97,6 @@ pub trait Board: Default {
         board
     }
 
-    /// Moves whatever is at *from* to *to*.
-    /// Note that this method doesn't care, whether the move is valid or not.
-    fn make_move(&mut self, from: Square, to: Square) {
-        let p = self.get_piece_on_square(from);
-        self.put_piece_option(to, p);
-        self.clear_square(from);
-    }
-
     fn format_print_board(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         for v in 0..8 {
             for h in 0..8 {
@@ -108,6 +135,3 @@ pub trait Board: Default {
         Ok(())
     }
 }
-
-#[cfg(test)]
-mod test {}

@@ -32,18 +32,31 @@ impl Board for ArrayBoard {
         self.board[square.vertical() as usize][square.horizontal() as usize] = piece;
     }
 
+    fn get_all_pieces(&self) -> [Option<(Piece, Square)>; 32] {
+        let mut i = 0;
+        let mut pieces = [const { None }; 32];
+        for v in 0..8 {
+            for h in 0..8 {
+                if let Some(p) = self.board[v][h] {
+                    pieces[i] = Some((p, Square::new(h as u8, v as u8).unwrap()));
+                    i += 1;
+                }
+            }
+        }
+        pieces
+    }
+
     fn get_white_pieces(&self) -> [Option<(Piece, Square)>; 16] {
         let mut i = 0;
         let mut pieces = [const { None }; 16];
         for v in 0..8 {
             for h in 0..8 {
-                self.board[v][h]
-                    .and_then(|p| if p.is_white() { Some(p) } else { None })
-                    .and_then(|p| {
+                if let Some(p) = self.board[v][h] {
+                    if p.is_white() {
                         pieces[i] = Some((p, Square::new(h as u8, v as u8).unwrap()));
                         i += 1;
-                        Some(())
-                    });
+                    }
+                }
             }
         }
         pieces
@@ -53,13 +66,12 @@ impl Board for ArrayBoard {
         let mut pieces = [const { None }; 16];
         for v in 0..8 {
             for h in 0..8 {
-                self.board[v][h]
-                    .and_then(|p| if p.is_black() { Some(p) } else { None })
-                    .and_then(|p| {
+                if let Some(p) = self.board[v][h] {
+                    if p.is_black() {
                         pieces[i] = Some((p, Square::new(h as u8, v as u8).unwrap()));
                         i += 1;
-                        Some(())
-                    });
+                    }
+                }
             }
         }
         pieces
