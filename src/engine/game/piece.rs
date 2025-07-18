@@ -1,4 +1,4 @@
-use std::{cmp, fmt::Display};
+use std::fmt::Display;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
@@ -20,24 +20,6 @@ pub enum Piece {
 impl Default for Piece {
     fn default() -> Self {
         Self::WhitePawn
-    }
-}
-
-impl PartialOrd for Piece {
-    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
-        if self.is_knight() && other.is_bishop() {
-            Some(cmp::Ordering::Less)
-        } else if self.is_bishop() && other.is_knight() {
-            Some(cmp::Ordering::Greater)
-        } else {
-            Some(self.get_value().cmp(&other.get_value()))
-        }
-    }
-}
-
-impl Ord for Piece {
-    fn cmp(&self, other: &Self) -> cmp::Ordering {
-        return self.partial_cmp(other).unwrap();
     }
 }
 
@@ -133,7 +115,7 @@ impl Piece {
     pub fn short_name(&self) -> &'static str {
         match self {
             Piece::WhitePawn | Piece::BlackPawn => "P",
-            Piece::WhiteKnight | Piece::BlackKnight => "K",
+            Piece::WhiteKnight | Piece::BlackKnight => "N",
             Piece::WhiteBishop | Piece::BlackBishop => "B",
             Piece::WhiteRook | Piece::BlackRook => "R",
             Piece::WhiteQueen | Piece::BlackQueen => "Q",

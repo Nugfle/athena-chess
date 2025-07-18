@@ -1,10 +1,22 @@
 #![recursion_limit = "256"]
-use athena_chess::game::Game;
+use crate::engine::Engine;
 
-mod game;
+mod engine;
+mod service;
+
+#[cfg(not(feature = "service"))]
 fn main() {
     env_logger::init();
 
-    let game = Game::new();
-    println!("{}", game);
+    let engine = Engine::new();
+    println!("{}", engine.print_game());
+}
+
+#[cfg(feature = "service")]
+#[tokio::main]
+async fn main() {
+    use std::{env, net::SocketAddr};
+    let addr: SocketAddr = env::args().nth(1).unwrap().parse().unwrap();
+
+    service::AthenaServer::run_at(addr).await.unwrap();
 }

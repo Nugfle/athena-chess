@@ -1,6 +1,6 @@
-use crate::game::board::Board;
-use crate::game::piece::Piece;
-use crate::game::square::*;
+use super::board::Board;
+use super::piece::Piece;
+use super::square::Square;
 use core::fmt::Display;
 use std::usize;
 
@@ -8,6 +8,7 @@ use std::usize;
 pub struct ArrayBoard {
     board: [[Option<Piece>; 8]; 8],
 }
+
 impl Default for ArrayBoard {
     /// an empty board, use `init()` to set up all the pieces
     fn default() -> Self {

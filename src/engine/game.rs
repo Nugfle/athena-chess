@@ -1,9 +1,8 @@
 use std::fmt::Display;
 
+pub use array_board::ArrayBoard;
 use board::Board;
 use chess_move::Move;
-
-use crate::game::{array_board::ArrayBoard, square::Square};
 
 mod array_board;
 mod board;

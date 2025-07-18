@@ -1,8 +1,6 @@
-use std::{fmt::Display, str::FromStr};
-
-use crate::game::error::ChessError;
-
+use super::error::ChessError;
 use super::{piece::Piece, square::Square};
+use std::{fmt::Display, str::FromStr};
 
 #[derive(Debug, Clone, Default)]
 pub struct Move {

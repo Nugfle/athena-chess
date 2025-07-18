@@ -1,11 +1,7 @@
+use super::piece::Piece;
+use super::square::*;
 use colored::Colorize;
 use core::fmt;
-use std::cmp::Ordering;
-
-use crate::game::square::*;
-
-use super::piece::Piece;
-use super::square::Square;
 
 pub trait Board: Default {
     fn get_piece_on_square(&self, square: Square) -> Option<Piece>;

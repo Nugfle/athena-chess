@@ -1,4 +1,4 @@
-use crate::game::error::InvalidSquareError;
+use super::error::InvalidSquareError;
 use log::error;
 use std::fmt::Display;
 use std::str::FromStr;
