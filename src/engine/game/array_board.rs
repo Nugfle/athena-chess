@@ -17,6 +17,9 @@ impl<'a> Iterator for ArrayBoardIter<'a> {
     type Item = (Square, Option<&'a Piece>);
 
     fn next(&mut self) -> Option<Self::Item> {
+        if self.index >= 64 {
+            return None;
+        }
         let s = Square::try_from(self.index).unwrap();
         self.index += 1;
         Some((s, self.board[s.as_index()].as_ref()))

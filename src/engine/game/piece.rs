@@ -29,7 +29,7 @@ impl Display for Piece {
             Piece::WhitePawn => write!(f, "White Pawn"),
             Piece::WhiteKnight => write!(f, "White Knight"),
             Piece::WhiteBishop => write!(f, "White Bishop"),
-            Piece::WhiteRook => write!(f, "Whit Rook"),
+            Piece::WhiteRook => write!(f, "White Rook"),
             Piece::WhiteQueen => write!(f, "White Queen"),
             Piece::WhiteKing => write!(f, "White King"),
             Piece::BlackPawn => write!(f, "Black Pawn"),

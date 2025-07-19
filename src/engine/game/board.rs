@@ -104,41 +104,41 @@ pub trait Board: Default {
     }
 
     fn format_print_board(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        for rank in Rank::One {
-            for file in File::A {
-                let s = Square::new(rank, file);
-                write!(
-                    f,
-                    "{}",
-                    if (rank as u8 / 8 + file as u8) % 2 == 0 {
-                        match self.get_piece_on_square(s) {
-                            None => "   ".normal(),
-                            Some(p) => {
-                                if p.is_black() {
-                                    format!(" {} ", p.short_name()).black()
-                                } else {
-                                    format!(" {} ", p.short_name()).bright_white()
-                                }
+        for (s, opt) in self.iter() {
+            write!(
+                f,
+                "{}",
+                if (s.rank() as u8 + s.file() as u8) % 2 == 0 {
+                    match opt {
+                        None => "   ".normal(),
+                        Some(p) => {
+                            if p.is_black() {
+                                format!(" {} ", p.short_name()).black()
+                            } else {
+                                format!(" {} ", p.short_name()).bright_white()
                             }
                         }
-                        .on_bright_black()
-                    } else {
-                        match self.get_piece_on_square(s) {
-                            None => "   ".normal(),
-                            Some(p) => {
-                                if p.is_black() {
-                                    format!(" {} ", p.short_name()).black()
-                                } else {
-                                    format!(" {} ", p.short_name()).bright_white()
-                                }
-                            }
-                        }
-                        .on_white()
                     }
-                )?;
+                    .on_bright_black()
+                } else {
+                    match opt {
+                        None => "   ".normal(),
+                        Some(p) => {
+                            if p.is_black() {
+                                format!(" {} ", p.short_name()).black()
+                            } else {
+                                format!(" {} ", p.short_name()).bright_white()
+                            }
+                        }
+                    }
+                    .on_white()
+                }
+            )?;
+            if s.file() == File::H as u8 {
+                write!(f, "\n")?;
             }
-            write!(f, "\n")?;
         }
+
         Ok(())
     }
 }

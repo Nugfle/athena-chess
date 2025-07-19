@@ -68,7 +68,7 @@ pub const H6: Square = Square::new(Rank::Six, File::H);
 pub const H7: Square = Square::new(Rank::Seven, File::H);
 pub const H8: Square = Square::new(Rank::Eight, File::H);
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum File {
     A = 0,
     B = 1,
@@ -113,7 +113,7 @@ impl Iterator for File {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Rank {
     One = 0,
     Two = 8,
@@ -173,6 +173,7 @@ impl Square {
     pub const fn file(&self) -> u8 {
         self.0 % 8
     }
+
     pub const fn rank(&self) -> u8 {
         self.0 / 8
     }
