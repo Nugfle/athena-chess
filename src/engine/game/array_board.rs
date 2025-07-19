@@ -2,17 +2,16 @@ use super::board::Board;
 use super::piece::Piece;
 use super::square::Square;
 use core::fmt::Display;
-use std::usize;
 
 #[derive(Debug, Clone)]
 pub struct ArrayBoard {
-    board: [[Option<Piece>; 8]; 8],
+    board: [Option<Piece>; 64],
 }
 
 impl Default for ArrayBoard {
     /// an empty board, use `init()` to set up all the pieces
     fn default() -> Self {
-        Self { board: [[None; 8]; 8] }
+        Self { board: [None; 64] }
     }
 }
 
@@ -25,56 +24,47 @@ impl Display for ArrayBoard {
 
 impl Board for ArrayBoard {
     fn get_piece_on_square(&self, square: Square) -> Option<Piece> {
-        self.board[square.vertical() as usize][square.horizontal() as usize]
+        self.board[square.as_index()]
     }
 
     /// overwrites the previous value at *square* with *piece*
     fn put_piece_option(&mut self, square: Square, piece: Option<Piece>) {
-        self.board[square.vertical() as usize][square.horizontal() as usize] = piece;
+        self.board[square.as_index()] = piece;
     }
 
     fn get_all_pieces(&self) -> [Option<(Piece, Square)>; 32] {
-        let mut i = 0;
         let mut pieces = [const { None }; 32];
-        for v in 0..8 {
-            for h in 0..8 {
-                if let Some(p) = self.board[v][h] {
-                    pieces[i] = Some((p, Square::new(h as u8, v as u8).unwrap()));
-                    i += 1;
-                }
+        self.board.iter().enumerate().for_each(|(i, opt)| {
+            let s = Square::try_from(i).unwrap();
+            if let Some(p) = opt {
+                pieces[i] = Some((*p, s));
             }
-        }
+        });
         pieces
     }
 
     fn get_white_pieces(&self) -> [Option<(Piece, Square)>; 16] {
-        let mut i = 0;
         let mut pieces = [const { None }; 16];
-        for v in 0..8 {
-            for h in 0..8 {
-                if let Some(p) = self.board[v][h] {
-                    if p.is_white() {
-                        pieces[i] = Some((p, Square::new(h as u8, v as u8).unwrap()));
-                        i += 1;
-                    }
+        self.board.iter().enumerate().for_each(|(i, opt)| {
+            let s = Square::try_from(i).unwrap();
+            if let Some(p) = opt {
+                if p.is_white() {
+                    pieces[i] = Some((*p, s));
                 }
             }
-        }
+        });
         pieces
     }
     fn get_black_pieces(&self) -> [Option<(Piece, Square)>; 16] {
-        let mut i = 0;
         let mut pieces = [const { None }; 16];
-        for v in 0..8 {
-            for h in 0..8 {
-                if let Some(p) = self.board[v][h] {
-                    if p.is_black() {
-                        pieces[i] = Some((p, Square::new(h as u8, v as u8).unwrap()));
-                        i += 1;
-                    }
+        self.board.iter().enumerate().for_each(|(i, opt)| {
+            let s = Square::try_from(i).unwrap();
+            if let Some(p) = opt {
+                if p.is_black() {
+                    pieces[i] = Some((*p, s));
                 }
             }
-        }
+        });
         pieces
     }
 }

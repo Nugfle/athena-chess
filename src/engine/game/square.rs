@@ -2,99 +2,207 @@ use super::error::InvalidSquareError;
 use log::error;
 use std::fmt::Display;
 use std::str::FromStr;
+use std::usize;
 
-pub const A1: Square = Square { vertical: 0, horizontal: 0 };
-pub const A2: Square = Square { vertical: 1, horizontal: 0 };
-pub const A3: Square = Square { vertical: 2, horizontal: 0 };
-pub const A4: Square = Square { vertical: 3, horizontal: 0 };
-pub const A5: Square = Square { vertical: 4, horizontal: 0 };
-pub const A6: Square = Square { vertical: 5, horizontal: 0 };
-pub const A7: Square = Square { vertical: 6, horizontal: 0 };
-pub const A8: Square = Square { vertical: 7, horizontal: 0 };
+pub const A1: Square = Square::new(Rank::One, File::A);
+pub const A2: Square = Square::new(Rank::Two, File::A);
+pub const A3: Square = Square::new(Rank::Three, File::A);
+pub const A4: Square = Square::new(Rank::Four, File::A);
+pub const A5: Square = Square::new(Rank::Five, File::A);
+pub const A6: Square = Square::new(Rank::Six, File::A);
+pub const A7: Square = Square::new(Rank::Seven, File::A);
+pub const A8: Square = Square::new(Rank::Eight, File::A);
+pub const B1: Square = Square::new(Rank::One, File::B);
+pub const B2: Square = Square::new(Rank::Two, File::B);
+pub const B3: Square = Square::new(Rank::Three, File::B);
+pub const B4: Square = Square::new(Rank::Four, File::B);
+pub const B5: Square = Square::new(Rank::Five, File::B);
+pub const B6: Square = Square::new(Rank::Six, File::B);
+pub const B7: Square = Square::new(Rank::Seven, File::B);
+pub const B8: Square = Square::new(Rank::Eight, File::B);
+pub const C1: Square = Square::new(Rank::One, File::C);
+pub const C2: Square = Square::new(Rank::Two, File::C);
+pub const C3: Square = Square::new(Rank::Three, File::C);
+pub const C4: Square = Square::new(Rank::Four, File::C);
+pub const C5: Square = Square::new(Rank::Five, File::C);
+pub const C6: Square = Square::new(Rank::Six, File::C);
+pub const C7: Square = Square::new(Rank::Seven, File::C);
+pub const C8: Square = Square::new(Rank::Eight, File::C);
+pub const D1: Square = Square::new(Rank::One, File::D);
+pub const D2: Square = Square::new(Rank::Two, File::D);
+pub const D3: Square = Square::new(Rank::Three, File::D);
+pub const D4: Square = Square::new(Rank::Four, File::D);
+pub const D5: Square = Square::new(Rank::Five, File::D);
+pub const D6: Square = Square::new(Rank::Six, File::D);
+pub const D7: Square = Square::new(Rank::Seven, File::D);
+pub const D8: Square = Square::new(Rank::Eight, File::D);
+pub const E1: Square = Square::new(Rank::One, File::E);
+pub const E2: Square = Square::new(Rank::Two, File::E);
+pub const E3: Square = Square::new(Rank::Three, File::E);
+pub const E4: Square = Square::new(Rank::Four, File::E);
+pub const E5: Square = Square::new(Rank::Five, File::E);
+pub const E6: Square = Square::new(Rank::Six, File::E);
+pub const E7: Square = Square::new(Rank::Seven, File::E);
+pub const E8: Square = Square::new(Rank::Eight, File::E);
+pub const F1: Square = Square::new(Rank::One, File::F);
+pub const F2: Square = Square::new(Rank::Two, File::F);
+pub const F3: Square = Square::new(Rank::Three, File::F);
+pub const F4: Square = Square::new(Rank::Four, File::F);
+pub const F5: Square = Square::new(Rank::Five, File::F);
+pub const F6: Square = Square::new(Rank::Six, File::F);
+pub const F7: Square = Square::new(Rank::Seven, File::F);
+pub const F8: Square = Square::new(Rank::Eight, File::F);
+pub const G1: Square = Square::new(Rank::One, File::G);
+pub const G2: Square = Square::new(Rank::Two, File::G);
+pub const G3: Square = Square::new(Rank::Three, File::G);
+pub const G4: Square = Square::new(Rank::Four, File::G);
+pub const G5: Square = Square::new(Rank::Five, File::G);
+pub const G6: Square = Square::new(Rank::Six, File::G);
+pub const G7: Square = Square::new(Rank::Seven, File::G);
+pub const G8: Square = Square::new(Rank::Eight, File::G);
+pub const H1: Square = Square::new(Rank::One, File::H);
+pub const H2: Square = Square::new(Rank::Two, File::H);
+pub const H3: Square = Square::new(Rank::Three, File::H);
+pub const H4: Square = Square::new(Rank::Four, File::H);
+pub const H5: Square = Square::new(Rank::Five, File::H);
+pub const H6: Square = Square::new(Rank::Six, File::H);
+pub const H7: Square = Square::new(Rank::Seven, File::H);
+pub const H8: Square = Square::new(Rank::Eight, File::H);
 
-pub const B1: Square = Square { vertical: 0, horizontal: 1 };
-pub const B2: Square = Square { vertical: 1, horizontal: 1 };
-pub const B3: Square = Square { vertical: 2, horizontal: 1 };
-pub const B4: Square = Square { vertical: 3, horizontal: 1 };
-pub const B5: Square = Square { vertical: 4, horizontal: 1 };
-pub const B6: Square = Square { vertical: 5, horizontal: 1 };
-pub const B7: Square = Square { vertical: 6, horizontal: 1 };
-pub const B8: Square = Square { vertical: 7, horizontal: 1 };
+#[derive(Debug, Clone, Copy)]
+pub enum File {
+    A = 0,
+    B = 1,
+    C = 2,
+    D = 3,
+    E = 4,
+    F = 5,
+    G = 6,
+    H = 7,
+}
 
-pub const C1: Square = Square { vertical: 0, horizontal: 2 };
-pub const C2: Square = Square { vertical: 1, horizontal: 2 };
-pub const C3: Square = Square { vertical: 2, horizontal: 2 };
-pub const C4: Square = Square { vertical: 3, horizontal: 2 };
-pub const C5: Square = Square { vertical: 4, horizontal: 2 };
-pub const C6: Square = Square { vertical: 5, horizontal: 2 };
-pub const C7: Square = Square { vertical: 6, horizontal: 2 };
-pub const C8: Square = Square { vertical: 7, horizontal: 2 };
+impl TryFrom<char> for File {
+    type Error = InvalidSquareError;
+    fn try_from(s: char) -> Result<Self, Self::Error> {
+        match s {
+            'a' => Ok(Self::A),
+            'b' => Ok(Self::B),
+            'c' => Ok(Self::C),
+            'd' => Ok(Self::D),
+            'e' => Ok(Self::E),
+            'f' => Ok(Self::F),
+            'g' => Ok(Self::G),
+            'h' => Ok(Self::H),
+            _ => Err(InvalidSquareError::InvalidLiteral { literal: s.to_string() }),
+        }
+    }
+}
 
-pub const D1: Square = Square { vertical: 0, horizontal: 3 };
-pub const D2: Square = Square { vertical: 1, horizontal: 3 };
-pub const D3: Square = Square { vertical: 2, horizontal: 3 };
-pub const D4: Square = Square { vertical: 3, horizontal: 3 };
-pub const D5: Square = Square { vertical: 4, horizontal: 3 };
-pub const D6: Square = Square { vertical: 5, horizontal: 3 };
-pub const D7: Square = Square { vertical: 6, horizontal: 3 };
-pub const D8: Square = Square { vertical: 7, horizontal: 3 };
+impl Iterator for File {
+    type Item = Self;
+    fn next(&mut self) -> Option<Self::Item> {
+        match self {
+            File::A => Some(File::B),
+            File::B => Some(File::C),
+            File::C => Some(File::D),
+            File::D => Some(File::E),
+            File::E => Some(File::F),
+            File::F => Some(File::G),
+            File::G => Some(File::H),
+            File::H => None,
+        }
+    }
+}
 
-pub const E1: Square = Square { vertical: 0, horizontal: 4 };
-pub const E2: Square = Square { vertical: 1, horizontal: 4 };
-pub const E3: Square = Square { vertical: 2, horizontal: 4 };
-pub const E4: Square = Square { vertical: 3, horizontal: 4 };
-pub const E5: Square = Square { vertical: 4, horizontal: 4 };
-pub const E6: Square = Square { vertical: 5, horizontal: 4 };
-pub const E7: Square = Square { vertical: 6, horizontal: 4 };
-pub const E8: Square = Square { vertical: 7, horizontal: 4 };
+#[derive(Debug, Clone, Copy)]
+pub enum Rank {
+    One = 0,
+    Two = 8,
+    Three = 16,
+    Four = 24,
+    Five = 32,
+    Six = 40,
+    Seven = 48,
+    Eight = 56,
+}
 
-pub const F1: Square = Square { vertical: 0, horizontal: 5 };
-pub const F2: Square = Square { vertical: 1, horizontal: 5 };
-pub const F3: Square = Square { vertical: 2, horizontal: 5 };
-pub const F4: Square = Square { vertical: 3, horizontal: 5 };
-pub const F5: Square = Square { vertical: 4, horizontal: 5 };
-pub const F6: Square = Square { vertical: 5, horizontal: 5 };
-pub const F7: Square = Square { vertical: 6, horizontal: 5 };
-pub const F8: Square = Square { vertical: 7, horizontal: 5 };
+impl Iterator for Rank {
+    type Item = Self;
+    fn next(&mut self) -> Option<Self::Item> {
+        match self {
+            Rank::One => Some(Rank::Two),
+            Rank::Two => Some(Rank::Three),
+            Rank::Three => Some(Rank::Four),
+            Rank::Four => Some(Rank::Five),
+            Rank::Five => Some(Rank::Six),
+            Rank::Six => Some(Rank::Seven),
+            Rank::Seven => Some(Rank::Eight),
+            Rank::Eight => None,
+        }
+    }
+}
 
-pub const G1: Square = Square { vertical: 0, horizontal: 6 };
-pub const G2: Square = Square { vertical: 1, horizontal: 6 };
-pub const G3: Square = Square { vertical: 2, horizontal: 6 };
-pub const G4: Square = Square { vertical: 3, horizontal: 6 };
-pub const G5: Square = Square { vertical: 4, horizontal: 6 };
-pub const G6: Square = Square { vertical: 5, horizontal: 6 };
-pub const G7: Square = Square { vertical: 6, horizontal: 6 };
-pub const G8: Square = Square { vertical: 7, horizontal: 6 };
-
-pub const H1: Square = Square { vertical: 0, horizontal: 7 };
-pub const H2: Square = Square { vertical: 1, horizontal: 7 };
-pub const H3: Square = Square { vertical: 2, horizontal: 7 };
-pub const H4: Square = Square { vertical: 3, horizontal: 7 };
-pub const H5: Square = Square { vertical: 4, horizontal: 7 };
-pub const H6: Square = Square { vertical: 5, horizontal: 7 };
-pub const H7: Square = Square { vertical: 6, horizontal: 7 };
-pub const H8: Square = Square { vertical: 7, horizontal: 7 };
+impl TryFrom<char> for Rank {
+    type Error = InvalidSquareError;
+    fn try_from(value: char) -> Result<Self, Self::Error> {
+        match value {
+            '1' => Ok(Self::One),
+            '2' => Ok(Self::Two),
+            '3' => Ok(Self::Three),
+            '4' => Ok(Self::Four),
+            '5' => Ok(Self::Five),
+            '6' => Ok(Self::Six),
+            '7' => Ok(Self::Seven),
+            '8' => Ok(Self::Eight),
+            _ => Err(InvalidSquareError::InvalidLiteral { literal: value.to_string() }),
+        }
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Square {
-    horizontal: u8,
-    vertical: u8,
+    square: u8,
 }
 
 impl Square {
-    pub fn new(horizontal: u8, vertical: u8) -> Result<Self, InvalidSquareError> {
-        if horizontal >= 8 || vertical >= 8 {
-            Err(InvalidSquareError::OutOfBounds { h: horizontal, v: vertical })
-        } else {
-            Ok(Self { horizontal, vertical })
+    pub const fn new(rank: Rank, file: File) -> Self {
+        Self {
+            square: rank as u8 + file as u8,
         }
     }
-
-    pub fn horizontal(&self) -> u8 {
-        self.horizontal
+    pub const fn as_index(&self) -> usize {
+        self.square as usize
     }
-    pub fn vertical(&self) -> u8 {
-        self.vertical
+
+    pub const fn file(&self) -> u8 {
+        self.square % 8
+    }
+    pub const fn rank(&self) -> u8 {
+        self.square / 8
+    }
+}
+
+impl TryFrom<u8> for Square {
+    type Error = InvalidSquareError;
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        if value >= 64 {
+            Err(InvalidSquareError::OutOfBounds { h: value % 8, v: value / 8 })
+        } else {
+            Ok(Self { square: value })
+        }
+    }
+}
+impl TryFrom<usize> for Square {
+    type Error = InvalidSquareError;
+    fn try_from(value: usize) -> Result<Self, Self::Error> {
+        if value >= 64 {
+            Err(InvalidSquareError::OutOfBounds {
+                h: (value % 8) as u8,
+                v: (value / 8) as u8,
+            })
+        } else {
+            Ok(Self { square: value as u8 })
+        }
     }
 }
 
@@ -107,53 +215,18 @@ impl FromStr for Square {
                 length: value.len(),
             });
         }
-        let horizontal = match value.chars().nth(0).unwrap() {
-            'a' => 0,
-            'b' => 1,
-            'c' => 2,
-            'd' => 3,
-            'e' => 4,
-            'f' => 5,
-            'g' => 6,
-            'h' => 7,
-            _ => {
-                return Err(InvalidSquareError::InvalidLiteral { literal: value.to_string() });
-            }
-        };
-        let vertical = match value.chars().nth(1).unwrap() {
-            '1' => 0,
-            '2' => 1,
-            '3' => 2,
-            '4' => 3,
-            '5' => 4,
-            '6' => 5,
-            '7' => 6,
-            '8' => 7,
-            _ => {
-                return Err(InvalidSquareError::InvalidLiteral { literal: value.to_string() });
-            }
-        };
-        Ok(Self { horizontal, vertical })
-    }
-}
-
-impl TryFrom<(u8, u8)> for Square {
-    type Error = InvalidSquareError;
-    fn try_from(value: (u8, u8)) -> Result<Self, Self::Error> {
-        Self::new(value.0, value.1)
+        let rank = Rank::try_from(value.chars().nth(1).unwrap())?;
+        let file = File::try_from(value.chars().nth(0).unwrap())?;
+        Ok(Self::new(rank, file))
     }
 }
 
 impl Display for Square {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.horizontal >= 8 || self.vertical >= 8 {
-            error!("got invalid square: {:?}", self);
-            return Err(std::fmt::Error::default());
-        }
         write!(
             f,
             "{}{}",
-            match self.horizontal {
+            match self.square % 8 {
                 0 => "a",
                 1 => "b",
                 2 => "c",
@@ -164,7 +237,7 @@ impl Display for Square {
                 7 => "h",
                 _ => panic!(),
             },
-            self.vertical + 1
+            (self.square / 8) + 1
         )
     }
 }

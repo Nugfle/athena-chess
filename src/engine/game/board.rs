@@ -14,21 +14,22 @@ pub trait Board: Default {
         let mut i = 1;
         let mut j = 17;
         let mut pieces = [None; 32];
-        for v in 0..8 {
-            for h in 0..8 {
-                if let Some(p) = self.get_piece_on_square(Square::new(h, v).unwrap()) {
+        for rank in Rank::One {
+            for file in File::A {
+                let s = Square::new(rank, file);
+                if let Some(p) = self.get_piece_on_square(s) {
                     if p.is_white() {
                         if p.is_king() {
-                            pieces[0] = Some((p, Square::new(h as u8, v as u8).unwrap()));
+                            pieces[0] = Some((p, s));
                         } else {
-                            pieces[i] = Some((p, Square::new(h as u8, v as u8).unwrap()));
+                            pieces[i] = Some((p, s));
                             i += 1;
                         }
                     } else {
                         if p.is_king() {
-                            pieces[16] = Some((p, Square::new(h as u8, v as u8).unwrap()));
+                            pieces[16] = Some((p, s));
                         } else {
-                            pieces[j] = Some((p, Square::new(h as u8, v as u8).unwrap()));
+                            pieces[j] = Some((p, s));
                             j += 1;
                         }
                     }
@@ -107,13 +108,14 @@ pub trait Board: Default {
     }
 
     fn format_print_board(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        for v in 0..8 {
-            for h in 0..8 {
+        for rank in Rank::One {
+            for file in File::A {
+                let s = Square::new(rank, file);
                 write!(
                     f,
                     "{}",
-                    if (v + h) % 2 == 0 {
-                        match self.get_piece_on_square((h, v).try_into().unwrap()) {
+                    if (rank as u8 / 8 + file as u8) % 2 == 0 {
+                        match self.get_piece_on_square(s) {
                             None => "   ".normal(),
                             Some(p) => {
                                 if p.is_black() {
@@ -125,7 +127,7 @@ pub trait Board: Default {
                         }
                         .on_bright_black()
                     } else {
-                        match self.get_piece_on_square((h, v).try_into().unwrap()) {
+                        match self.get_piece_on_square(s) {
                             None => "   ".normal(),
                             Some(p) => {
                                 if p.is_black() {
