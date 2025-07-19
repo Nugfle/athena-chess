@@ -62,7 +62,7 @@ where
         };
 
         for opt in pieces {
-            if let Some((pc, sq)) = opt {
+            if let Some((sq, pc)) = opt {
                 let mut moves = match pc {
                     Piece::WhitePawn => self.get_white_pawn_moves(sq),
                     Piece::BlackPawn => self.get_black_pawn_moves(sq),

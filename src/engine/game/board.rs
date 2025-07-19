@@ -4,49 +4,53 @@ use colored::Colorize;
 use core::fmt;
 
 pub trait Board: Default {
+    // leaves room for board type specific optimization
+    type Iter<'a>: Iterator<Item = (Square, Option<&'a Piece>)>
+    where
+        Self: 'a;
+
+    fn iter(&self) -> Self::Iter<'_>;
+    /// returns the piece or none if the square is unoccupied
     fn get_piece_on_square(&self, square: Square) -> Option<Piece>;
+    /// Sets square to hold piece
     fn put_piece_option(&mut self, square: Square, piece: Option<Piece>);
+    /// Moves whatever is at *from* to *to*.
+    /// Note that this method doesn't care, whether the move is valid or not.
+    fn make_move(&mut self, from: Square, to: Square);
 
     /// 0..16 are white pieces
     /// 16..32 are black pieces
     /// each section starts with the king, the other pieces are unordered
-    fn get_all_pieces(&self) -> [Option<(Piece, Square)>; 32] {
+    fn get_all_pieces(&self) -> [Option<(Square, &Piece)>; 32] {
+        let mut pieces = [None; 32];
         let mut i = 1;
         let mut j = 17;
-        let mut pieces = [None; 32];
-        for rank in Rank::One {
-            for file in File::A {
-                let s = Square::new(rank, file);
-                if let Some(p) = self.get_piece_on_square(s) {
-                    if p.is_white() {
-                        if p.is_king() {
-                            pieces[0] = Some((p, s));
-                        } else {
-                            pieces[i] = Some((p, s));
-                            i += 1;
-                        }
-                    } else {
-                        if p.is_king() {
-                            pieces[16] = Some((p, s));
-                        } else {
-                            pieces[j] = Some((p, s));
-                            j += 1;
-                        }
-                    }
+        self.iter().for_each(|(s, opt)| {
+            if let Some(p) = opt {
+                if p.is_king() && p.is_black() {
+                    pieces[16] = Some((s, p));
+                } else if p.is_king() && p.is_white() {
+                    pieces[0] = Some((s, p));
+                } else if p.is_white() {
+                    pieces[i] = Some((s, p));
+                    i += 1;
+                } else {
+                    pieces[j] = Some((s, p));
+                    j += 1;
                 }
             }
-        }
+        });
         pieces
     }
 
     /// get all active white pieces
     /// 0 - is always King, all following pieces are in non specific order
-    fn get_white_pieces(&self) -> [Option<(Piece, Square)>; 16] {
+    fn get_white_pieces(&self) -> [Option<(Square, &Piece)>; 16] {
         self.get_all_pieces()[0..16].try_into().unwrap()
     }
     /// get all active black pieces
     /// 0 - is always King, all following pieces are in non specific order
-    fn get_black_pieces(&self) -> [Option<(Piece, Square)>; 16] {
+    fn get_black_pieces(&self) -> [Option<(Square, &Piece)>; 16] {
         self.get_all_pieces()[16..].try_into().unwrap()
     }
 
@@ -56,14 +60,6 @@ pub trait Board: Default {
 
     fn clear_square(&mut self, square: Square) {
         self.put_piece_option(square, None);
-    }
-
-    /// Moves whatever is at *from* to *to*.
-    /// Note that this method doesn't care, whether the move is valid or not.
-    fn make_move(&mut self, from: Square, to: Square) {
-        let p = self.get_piece_on_square(from);
-        self.put_piece_option(to, p);
-        self.clear_square(from);
     }
 
     fn init() -> Self {

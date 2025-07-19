@@ -8,6 +8,25 @@ pub struct ArrayBoard {
     board: [Option<Piece>; 64],
 }
 
+pub struct ArrayBoardIter<'a> {
+    board: &'a [Option<Piece>; 64],
+    index: usize,
+}
+
+impl<'a> Iterator for ArrayBoardIter<'a> {
+    type Item = (Square, Option<&'a Piece>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let s = Square::try_from(self.index).unwrap();
+        self.index += 1;
+        Some((s, self.board[s.as_index()].as_ref()))
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (64 - self.index, Some(64 - self.index))
+    }
+}
+
 impl Default for ArrayBoard {
     /// an empty board, use `init()` to set up all the pieces
     fn default() -> Self {
@@ -23,6 +42,18 @@ impl Display for ArrayBoard {
 }
 
 impl Board for ArrayBoard {
+    type Iter<'a>
+        = ArrayBoardIter<'a>
+    where
+        Self: 'a;
+
+    fn iter(&self) -> Self::Iter<'_> {
+        ArrayBoardIter {
+            board: &self.board,
+            index: 0,
+        }
+    }
+
     fn get_piece_on_square(&self, square: Square) -> Option<Piece> {
         self.board[square.as_index()]
     }
@@ -32,39 +63,7 @@ impl Board for ArrayBoard {
         self.board[square.as_index()] = piece;
     }
 
-    fn get_all_pieces(&self) -> [Option<(Piece, Square)>; 32] {
-        let mut pieces = [const { None }; 32];
-        self.board.iter().enumerate().for_each(|(i, opt)| {
-            let s = Square::try_from(i).unwrap();
-            if let Some(p) = opt {
-                pieces[i] = Some((*p, s));
-            }
-        });
-        pieces
-    }
-
-    fn get_white_pieces(&self) -> [Option<(Piece, Square)>; 16] {
-        let mut pieces = [const { None }; 16];
-        self.board.iter().enumerate().for_each(|(i, opt)| {
-            let s = Square::try_from(i).unwrap();
-            if let Some(p) = opt {
-                if p.is_white() {
-                    pieces[i] = Some((*p, s));
-                }
-            }
-        });
-        pieces
-    }
-    fn get_black_pieces(&self) -> [Option<(Piece, Square)>; 16] {
-        let mut pieces = [const { None }; 16];
-        self.board.iter().enumerate().for_each(|(i, opt)| {
-            let s = Square::try_from(i).unwrap();
-            if let Some(p) = opt {
-                if p.is_black() {
-                    pieces[i] = Some((*p, s));
-                }
-            }
-        });
-        pieces
+    fn make_move(&mut self, from: Square, to: Square) {
+        self.board[to.as_index()] = std::mem::take(&mut self.board[from.as_index()])
     }
 }

@@ -1,5 +1,4 @@
 use super::error::InvalidSquareError;
-use log::error;
 use std::fmt::Display;
 use std::str::FromStr;
 use std::usize;
@@ -159,26 +158,23 @@ impl TryFrom<char> for Rank {
     }
 }
 
+/// represents a square on a chess board. Can be in Range from 0 to 63
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub struct Square {
-    square: u8,
-}
+pub struct Square(u8);
 
 impl Square {
     pub const fn new(rank: Rank, file: File) -> Self {
-        Self {
-            square: rank as u8 + file as u8,
-        }
+        Self(rank as u8 + file as u8)
     }
     pub const fn as_index(&self) -> usize {
-        self.square as usize
+        self.0 as usize
     }
 
     pub const fn file(&self) -> u8 {
-        self.square % 8
+        self.0 % 8
     }
     pub const fn rank(&self) -> u8 {
-        self.square / 8
+        self.0 / 8
     }
 }
 
@@ -188,7 +184,7 @@ impl TryFrom<u8> for Square {
         if value >= 64 {
             Err(InvalidSquareError::OutOfBounds { h: value % 8, v: value / 8 })
         } else {
-            Ok(Self { square: value })
+            Ok(Self(value))
         }
     }
 }
@@ -201,7 +197,7 @@ impl TryFrom<usize> for Square {
                 v: (value / 8) as u8,
             })
         } else {
-            Ok(Self { square: value as u8 })
+            Ok(Self(value as u8))
         }
     }
 }
@@ -226,7 +222,7 @@ impl Display for Square {
         write!(
             f,
             "{}{}",
-            match self.square % 8 {
+            match self.0 % 8 {
                 0 => "a",
                 1 => "b",
                 2 => "c",
@@ -237,7 +233,7 @@ impl Display for Square {
                 7 => "h",
                 _ => panic!(),
             },
-            (self.square / 8) + 1
+            (self.0 / 8) + 1
         )
     }
 }
