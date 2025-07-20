@@ -9,7 +9,6 @@ fn main() {
     env_logger::init();
 
     let engine = Engine::new();
-    println!("{}", engine.print_game());
 }
 
 #[cfg(feature = "service")]
