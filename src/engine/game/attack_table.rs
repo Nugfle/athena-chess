@@ -1,5 +1,6 @@
+use super::square::Square;
 use super::utlis::*;
-use crate::engine::game::{bit_board::Square, occupancy::Occupancy};
+use crate::engine::game::occupancy::Occupancy;
 use std::usize;
 
 #[derive(Debug, Clone)]
