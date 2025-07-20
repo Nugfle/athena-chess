@@ -1,5 +1,5 @@
+use super::move_logic::*;
 use super::square::Square;
-use super::utlis::*;
 use crate::engine::game::occupancy::Occupancy;
 use std::usize;
 
@@ -45,8 +45,8 @@ impl<const M: usize, const N: usize> AttackTables<M, N> {
         let mut rook_tables: [AttackMagic<M>; 64] = core::array::from_fn(|_| AttackMagic::default());
         let mut i = 0;
         while i < 64 {
-            bishop_tables[i] = AttackMagic::create_attack_magic_bishop(Square(i));
-            rook_tables[i] = AttackMagic::create_attack_magic_rook(Square(i));
+            bishop_tables[i as usize] = AttackMagic::create_attack_magic_bishop(Square(i));
+            rook_tables[i as usize] = AttackMagic::create_attack_magic_rook(Square(i));
             i += 1;
         }
 
@@ -59,17 +59,22 @@ impl<const M: usize, const N: usize> AttackTables<M, N> {
         }
     }
     pub fn get_attack_pattern_rook(&self, square: Square, occupancy: Occupancy) -> u64 {
-        let attack_magic = &self.rook_tables[square.0];
+        let attack_magic = &self.rook_tables[square.0 as usize];
         attack_magic.attack_pattern[occupancy.hash(attack_magic.mask, attack_magic.magic_number, attack_magic.shift, M)]
     }
     pub fn get_attack_pattern_bishop(&self, square: Square, occupancy: Occupancy) -> u64 {
-        let attack_magic = &self.bishop_tables[square.0];
+        let attack_magic = &self.bishop_tables[square.0 as usize];
         // we need to
         attack_magic.attack_pattern[occupancy.hash(attack_magic.mask, attack_magic.magic_number, attack_magic.shift, M)]
     }
     pub fn get_attack_pattern_queen(&self, square: Square, occupancy: Occupancy) -> u64 {
         self.get_attack_pattern_rook(square, occupancy) | self.get_attack_pattern_bishop(square, occupancy)
     }
+}
+
+/// computes the amount of bits neccesary to address a slice of memory of size n
+pub fn bits_to_address(n: usize) -> u8 {
+    f32::log2(n as f32).ceil() as u8
 }
 
 impl<const N: usize> AttackMagic<N> {

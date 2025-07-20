@@ -91,14 +91,14 @@ pub enum Rank {
 
 /// represents a square on a chess board. Can be in Range from 0 to 63
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub struct Square(pub usize);
+pub struct Square(pub u8);
 
 impl Square {
     const fn new(rank: Rank, file: File) -> Self {
-        Self(rank as usize * 8 + file as usize)
+        Self(rank as u8 * 8 + file as u8)
     }
     pub fn from_file_rank(file: File, rank: Rank) -> Self {
-        Self(rank as usize * 8 + file as usize)
+        Self(rank as u8 * 8 + file as u8)
     }
     /// returns the square as bit board square, which allows for easy bit manipulation
     pub fn as_bbs(&self) -> u64 {
