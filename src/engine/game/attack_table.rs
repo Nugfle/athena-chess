@@ -43,11 +43,9 @@ impl<const M: usize, const N: usize> AttackTables<M, N> {
     pub fn create_tables() -> Self {
         let mut bishop_tables: [AttackMagic<N>; 64] = core::array::from_fn(|_| AttackMagic::default());
         let mut rook_tables: [AttackMagic<M>; 64] = core::array::from_fn(|_| AttackMagic::default());
-        let mut i = 0;
-        while i < 64 {
+        for i in 0..64 {
             bishop_tables[i as usize] = AttackMagic::create_attack_magic_bishop(Square(i));
             rook_tables[i as usize] = AttackMagic::create_attack_magic_rook(Square(i));
-            i += 1;
         }
 
         Self {
