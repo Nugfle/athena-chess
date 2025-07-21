@@ -1,7 +1,3 @@
-use std::collections::HashSet;
-
-use log::info;
-
 use super::occupancy::Occupancy;
 use super::square::Square;
 
@@ -34,6 +30,7 @@ pub fn create_rook_mask(square: Square) -> u64 {
     // our current logic adds the starting square, so we just remove it
     mask & !(1 << square.0)
 }
+
 /// returns the bitboard pattern for all possible rook moves with given occupancy starting at square
 pub fn create_rook_attack_pattern(square: Square, occupancy: Occupancy) -> u64 {
     let mut mask: u64 = 0;
@@ -155,59 +152,10 @@ pub fn create_bishop_attack_pattern(square: Square, occupancy: Occupancy) -> u64
     mask & !(1 << square.0)
 }
 
-/// creates all possbile Occupancy scenarios
-fn occupancies_from_mask(mask: u64) -> Vec<Occupancy> {
-    let size = 2_usize.pow(mask.count_ones());
-    info!("allocating {} bytes for mask: {}", size * 8, mask);
-    let mut v = Vec::with_capacity(size);
-    v.push(Occupancy(0));
-
-    // we go through all the bits in the mask. If the bit is set we effectively duplicate our
-    // current Vector with the newly found bit set.
-    for i in 0..64 {
-        if mask & (1 << i) != 0 {
-            v.append(&mut v.iter().map(|o| Occupancy(o.0 | (1 << i))).collect());
-        };
-    }
-    v
-}
-
-/// finds a valid magic number so the hash over all possible occupancies for a given mask is
-/// bijective. This method uses try and error and is highly resource intensive. If possible should
-/// use pre-computed magic values and load them from disk
-pub fn find_valid_magic_number(mask: u64, arr_size: usize) -> u64 {
-    let occupancies = occupancies_from_mask(mask);
-    println!("occupancies: {}", occupancies.len());
-    let mut magic_num = 0;
-
-    // the shift is used to select the appropriate amount of msbs for a given array size to index
-    // into.
-    let shift = 64 - (arr_size as f32).log2().ceil() as u8;
-
-    // we loop until we find a working number. As soon as we detect a colision we start again. This
-    // could probably be optimized with multithreading for better performance.
-    'outer: loop {
-        magic_num += 1;
-        let arr = vec![false; arr_size];
-        for occ in &occupancies {
-            if arr[occ.hash(mask, magic_num, shift, arr_size)] {
-                continue 'outer;
-            }
-        }
-        return magic_num;
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::engine::game::{occupancy, square::*};
-    #[test]
-    fn test_find_valid_magic_num() {
-        let mask = create_rook_mask(E1);
-        let num = find_valid_magic_number(mask, 2_usize.pow(mask.count_ones()));
-        panic!("found magic number: {}", num);
-    }
+    use crate::engine::game::square::*;
 
     fn squares_from_bitboard(bb: u64) -> Vec<String> {
         let mut squares = Vec::new();
