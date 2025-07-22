@@ -1,5 +1,46 @@
-use super::occupancy::Occupancy;
-use super::square::Square;
+use crate::engine::board::Occupancy;
+use crate::engine::board::square::*;
+
+/// the knight is no sliding piece, so we don't need to consider occupancy patterns for the knights
+/// movement. Therefore the logic is fairly straight forward
+pub fn create_knight_attack_pattern(square: Square) -> u64 {
+    let mut pattern = 0;
+    // -2 -1
+    if square.0 > 17 {
+        pattern |= 1 << (square.0 - 17);
+    }
+    // -2 + 1
+    if square.0 > 15 {
+        pattern |= 1 << (square.0 - 15);
+    }
+    // -1, -2
+    if square.0 > 10 {
+        pattern |= 1 << (square.0 - 10);
+    }
+    // -1, +2
+    if square.0 > 6 {
+        pattern |= 1 << (square.0 - 6);
+    }
+
+    // +1 -2
+    if square.0 < 58 {
+        pattern |= 1 << (square.0 + 6);
+    }
+    // +1 +2
+    if square.0 < 54 {
+        pattern |= 1 << (square.0 + 10);
+    }
+    // +2 -1
+    if square.0 < 49 {
+        pattern |= 1 << (square.0 + 15);
+    }
+    // +2 +1
+    if square.0 < 47 {
+        pattern |= 1 << (square.0 + 17);
+    }
+
+    pattern
+}
 
 /// returns a mask used for indexing rook attack patterns. The mask contains all movable squares
 /// from starting square whith a rook, except the border squares.
@@ -38,7 +79,7 @@ pub fn create_rook_attack_pattern(square: Square, occupancy: Occupancy) -> u64 {
     let s = square.0 as i8;
     let mut i = s;
 
-    while i / 8 == s / 8 {
+    while i / 8 == s / 8 && i < 64 {
         mask |= 1 << i;
         if occupancy.0 & (1 << i) != 0 {
             break;
@@ -46,7 +87,7 @@ pub fn create_rook_attack_pattern(square: Square, occupancy: Occupancy) -> u64 {
         i += 1;
     }
     i = s;
-    while i / 8 == s / 8 {
+    while i / 8 == s / 8 && i >= 0 {
         mask |= 1 << i;
         if occupancy.0 & (1 << i) != 0 {
             break;
@@ -155,7 +196,6 @@ pub fn create_bishop_attack_pattern(square: Square, occupancy: Occupancy) -> u64
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::engine::game::square::*;
 
     fn squares_from_bitboard(bb: u64) -> Vec<String> {
         let mut squares = Vec::new();
