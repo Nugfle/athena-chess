@@ -1,3 +1,4 @@
+use super::mask::BoardMask;
 use super::move_logic::*;
 use crate::engine::board::Occupancy;
 use crate::engine::board::square::Square;
@@ -12,7 +13,7 @@ pub const H: u32 = 1;
 
 #[derive(Debug, Clone, Default)]
 pub struct AttackMagic {
-    pub mask: u64,
+    pub mask: BoardMask,
     // the magic number is unique to each mask and ensures the bijective property of our hash
     // function
     pub magic_number: u64,
@@ -21,7 +22,7 @@ pub struct AttackMagic {
     // holds all possible attack patterns. The position in the array is determined by the hash of
     // the Occupancie. So we get a direct Mapping from currently occupied squares and our current
     // square, to all available moves.
-    pub attack_patterns: Vec<u64>,
+    pub attack_patterns: Vec<BoardMask>,
 }
 
 impl AttackMagic {
@@ -30,14 +31,14 @@ impl AttackMagic {
         info!("creating rook magic for {}", square);
         let mask = create_rook_mask(square);
 
-        let required_bits = (mask.count_ones() + H) as u8;
+        let required_bits = (mask.0.count_ones() + H) as u8;
         let len = 2_usize.pow(required_bits as u32);
         let shift = 64 - required_bits;
 
         let occupancies = occupancies_from_mask(mask);
         let magic_number = find_valid_magic_number(mask, len, &occupancies);
 
-        let mut attack_patterns: Vec<u64> = vec![0; len];
+        let mut attack_patterns: Vec<BoardMask> = vec![BoardMask(0); len];
         occupancies
             .iter()
             .map(|occ| (occ.hash(mask, magic_number, shift), create_rook_attack_pattern(square, *occ)))
@@ -56,14 +57,14 @@ impl AttackMagic {
         info!("creating bishop magic for {}", square);
         let mask = create_bishop_mask(square);
 
-        let required_bits = (mask.count_ones() + H) as u8;
+        let required_bits = (mask.0.count_ones() + H) as u8;
         let len = 2_usize.pow(required_bits as u32);
         let shift = 64 - required_bits;
 
         let occupancies = occupancies_from_mask(mask);
         let magic_number = find_valid_magic_number(mask, len, &occupancies);
 
-        let mut attack_patterns = vec![0; len];
+        let mut attack_patterns: Vec<BoardMask> = vec![BoardMask(0); len];
         occupancies
             .iter()
             .map(|occ| (occ.hash(mask, magic_number, shift), create_bishop_attack_pattern(square, *occ)))
@@ -79,19 +80,19 @@ impl AttackMagic {
 }
 
 impl Occupancy {
-    pub const fn hash(&self, mask: u64, magic_number: u64, shift: u8) -> usize {
+    pub const fn hash(&self, mask: BoardMask, magic_number: u64, shift: u8) -> usize {
         // we mask off only the relevant squares (so f.e. for a rook that would be the horizontal and
         // vertical line it is on), this is the first importaint step as it reduces complexity from
         // 2^64 down to 2^n where n is the number of relevant squares which is way more manageble.
         // We then try to create a as dense as possible bijection from the 2^n occupancy patterns
         // to an usize which can serve as an Index into an Attack Pattern Array.
-        ((self.0 & mask).wrapping_mul(magic_number) >> shift) as usize
+        ((self.0 & mask.0).wrapping_mul(magic_number) >> shift) as usize
     }
 }
 
 /// creates all possbile Occupancy scenarios from the mask used for finding blockings
-fn occupancies_from_mask(mask: u64) -> Vec<Occupancy> {
-    let size = 2_usize.pow(mask.count_ones());
+fn occupancies_from_mask(mask: BoardMask) -> Vec<Occupancy> {
+    let size = 2_usize.pow(mask.0.count_ones());
     let mut v = Vec::with_capacity(size);
 
     v.push(Occupancy(0));
@@ -99,8 +100,8 @@ fn occupancies_from_mask(mask: u64) -> Vec<Occupancy> {
     // we go through all the bits in the mask. If the bit is set we effectively duplicate our
     // current Vector with the newly found bit set.
     for i in 0..64 {
-        if mask & (1 << i) != 0 {
-            v.append(&mut v.iter().map(|o| Occupancy(o.0 | (1 << i))).collect());
+        if mask.contains(Square::new(i).unwrap()) {
+            v.append(&mut v.iter().map(|o| o.with_square(Square::new(i).unwrap())).collect());
         };
     }
     v
@@ -109,7 +110,7 @@ fn occupancies_from_mask(mask: u64) -> Vec<Occupancy> {
 /// finds a valid magic number so the hash over all possible occupancies for a given mask is
 /// bijective. This method uses try and error and is highly resource intensive. If possible should
 /// use pre-computed magic values and load them from disk
-fn find_valid_magic_number(mask: u64, arr_size: usize, occupancies: &Vec<Occupancy>) -> u64 {
+fn find_valid_magic_number(mask: BoardMask, arr_size: usize, occupancies: &Vec<Occupancy>) -> u64 {
     // the shift is used to select the appropriate amount of msbs for a given array size to index
     // into.
     let shift = 64 - (arr_size as f32).log2().ceil() as u8;
@@ -140,6 +141,6 @@ mod test {
     fn test_find_valid_magic_num() {
         let mask = create_rook_mask(E1);
         let o = occupancies_from_mask(mask);
-        let num = find_valid_magic_number(mask, 2_usize.pow(mask.count_ones() + H), &o);
+        let num = find_valid_magic_number(mask, 2_usize.pow(mask.0.count_ones() + H), &o);
     }
 }

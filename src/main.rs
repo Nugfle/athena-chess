@@ -6,6 +6,7 @@ mod service;
 #[cfg(not(feature = "service"))]
 fn main() {
     env_logger::builder().filter_level(log::LevelFilter::Info).try_init().unwrap();
+    // initailize the engine
     let engine = Engine::new();
 }
 
