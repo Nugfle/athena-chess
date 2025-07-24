@@ -1,6 +1,5 @@
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Piece {
-    #[default]
     Pawn,
     Knight,
     Bishop,
@@ -9,9 +8,8 @@ pub enum Piece {
     King,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Color {
-    #[default]
     White,
     Black,
 }
