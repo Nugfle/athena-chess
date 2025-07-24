@@ -4,6 +4,8 @@ pub mod square;
 use piece::{Color, Piece};
 use square::*;
 
+use crate::engine::game::error::IllegalMoveError;
+
 /// a representation of the board where each bit in the u64 represents the square on the board and
 /// whether it is occupied. This makes checking for blocking pieces as easy as applying a mask to
 /// the Occupancy and voila, you get all the squares with blocking pieces
@@ -38,15 +40,12 @@ impl Default for BitBoard {
 }
 
 impl BitBoard {
-    fn place(&mut self, piece: Piece, color: Color, square: Square) {
-        self.board[square.as_index()] = Some((piece, color));
-        self.occupancy.add_square(square);
-    }
     pub fn init() -> Self {
         let mut bb = Self::default();
         bb.setup_for_game();
         bb
     }
+
     fn setup_for_game(&mut self) {
         self.place_piece_on_square(Piece::Rook, Color::Black, H8);
         self.place_piece_on_square(Piece::Rook, Color::Black, A8);
@@ -84,12 +83,24 @@ impl BitBoard {
         self.place_piece_on_square(Piece::Pawn, Color::White, B2);
         self.place_piece_on_square(Piece::Pawn, Color::White, A2);
     }
-    fn place_piece_on_square(&mut self, piece: Piece, color: Color, square: Square) {
-        self.board[square.as_index()] = Some((piece, color));
+
+    fn place_piece_on_square(&mut self, piece: Piece, color: Color, square: Square) -> Option<(Piece, Color)> {
         self.occupancy.add_square(square);
+        self.board[square.as_index()].replace((piece, color))
     }
+
     fn remove_piece_from_square(&mut self, square: Square) -> Option<(Piece, Color)> {
         self.occupancy.remove_square(square);
         self.board[square.as_index()].take()
+    }
+
+    pub fn get_piece_on_square(&self, square: Square) -> Option<&(Piece, Color)> { self.board[square.as_index()].as_ref() }
+
+    pub fn move_piece(&mut self, from: Square, to: Square) -> Result<Option<(Piece, Color)>, IllegalMoveError> {
+        let (p, c) = match self.remove_piece_from_square(from) {
+            Some(p) => p,
+            None => return Err(IllegalMoveError::EmptySquare { s: from }),
+        };
+        Ok(self.place_piece_on_square(p, c, to))
     }
 }

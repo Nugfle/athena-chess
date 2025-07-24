@@ -4,10 +4,13 @@ use std::sync::LazyLock;
 use attack_tables::AttackTables;
 use board::BitBoard;
 use board::piece::Piece;
-use board::square::Square;
+use chess_move::Move;
+use error::ChessError;
 
 mod attack_tables;
 mod board;
+pub mod chess_move;
+mod error;
 mod evaluation;
 
 static ATTACK_TABLES: LazyLock<AttackTables> = LazyLock::new(|| {
@@ -21,13 +24,6 @@ static ATTACK_TABLES: LazyLock<AttackTables> = LazyLock::new(|| {
 #[cfg(feature = "benchmark")]
 pub fn create_tables() { AttackTables::create_tables(); }
 
-#[derive(Debug, Clone, Copy)]
-pub struct Move {
-    piece: Piece,
-    from: Square,
-    to: Square,
-}
-
 #[derive(Debug, Clone)]
 pub struct Game {
     board: BitBoard,
@@ -36,9 +32,21 @@ pub struct Game {
 
 impl Game {
     pub fn init() -> Self {
+        let _ = ATTACK_TABLES;
         Self {
             board: BitBoard::init(),
             moves: Vec::new(),
         }
+    }
+
+    pub fn execute_move(&mut self, mv: Move) -> Result<(), ChessError> {
+        match mv.get_piece() {
+            Piece::Pawn => {
+                todo!("compute pawn moves on the fly");
+            }
+            _ => todo!("implement move checks with ATTACK_TABLE"),
+        }
+        self.moves.push(mv);
+        Ok(())
     }
 }
