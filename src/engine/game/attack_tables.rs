@@ -1,9 +1,10 @@
-use crate::engine::attack_tables::mask::BoardMask;
-
 use super::board::Occupancy;
 use super::board::square::*;
+
 use attack_magic::AttackMagic;
+use mask::BoardMask;
 use move_logic::create_knight_attack_pattern;
+
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 mod attack_magic;

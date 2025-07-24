@@ -1,11 +1,11 @@
-use super::mask::BoardMask;
-use super::move_logic::*;
-use crate::engine::board::Occupancy;
-use crate::engine::board::square::Square;
-
 use log::info;
 use rand::{self, random};
 use std::usize;
+
+use super::mask::BoardMask;
+use super::move_logic::*;
+use crate::engine::game::board::Occupancy;
+use crate::engine::game::board::square::Square;
 
 /// the density with which the arrays will be paced. Increasing this will result in more sparsely
 /// populated arrays but faster times for finding magic numbers
@@ -135,7 +135,7 @@ fn find_valid_magic_number(mask: BoardMask, arr_size: usize, occupancies: &Vec<O
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::engine::board::square::*;
+    use crate::engine::game::board::square::*;
 
     #[test]
     fn test_find_valid_magic_num() {

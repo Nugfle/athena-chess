@@ -1,6 +1,6 @@
 use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not};
 
-use crate::engine::board::square::Square;
+use crate::engine::game::board::square::Square;
 
 /// a mask to overlay over a Occupancy
 #[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord)]

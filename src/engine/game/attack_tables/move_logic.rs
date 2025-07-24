@@ -1,6 +1,6 @@
 use super::mask::BoardMask;
-use crate::engine::board::Occupancy;
-use crate::engine::board::square::*;
+use crate::engine::game::board::Occupancy;
+use crate::engine::game::board::square::Square;
 
 /// the knight is no sliding piece, so we don't need to consider occupancy patterns for the knights
 /// movement. Therefore the logic is fairly straight forward
@@ -204,6 +204,7 @@ pub fn create_bishop_attack_pattern(square: Square, occupancy: Occupancy) -> Boa
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::engine::game::board::square::*;
 
     fn squares_from_mask(mask: BoardMask) -> Vec<String> {
         let mut squares = Vec::new();
