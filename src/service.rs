@@ -1,10 +1,8 @@
 use crate::engine::Engine;
 use error::ServiceError;
+use log::{info, log};
 use std::net::SocketAddr;
-use tokio::{
-    self,
-    net::{TcpListener, TcpStream, ToSocketAddrs},
-};
+use tokio::net::{TcpListener, TcpStream, ToSocketAddrs};
 
 mod error;
 
@@ -27,14 +25,16 @@ impl AthenaServer {
 }
 
 pub struct AthenaService {
-    engine: Option<Engine>,
+    engine: Engine,
 }
 
 impl AthenaService {
     pub fn new() -> Self {
-        Self { engine: None }
+        Self { engine: Engine::new() }
     }
+
     pub async fn run_service(&mut self, conn: TcpStream, addr: SocketAddr) -> Result<(), ServiceError> {
+        info!("got connection from: {}", addr);
         todo!();
         Ok(())
     }

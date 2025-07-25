@@ -14,8 +14,12 @@ fn main() {
 #[tokio::main]
 async fn main() {
     use std::env;
+    use std::net::Ipv4Addr;
     use std::net::SocketAddr;
-    let addr: SocketAddr = env::args().nth(1).unwrap().parse().unwrap();
+    env_logger::builder().filter_level(log::LevelFilter::Info).try_init().unwrap();
+
+    let port: u16 = env::args().nth(1).unwrap().parse().unwrap();
+    let addr = SocketAddr::new(std::net::IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port);
 
     service::AthenaServer::run_at(addr).await.unwrap();
 }
