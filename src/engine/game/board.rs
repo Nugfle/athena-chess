@@ -84,23 +84,15 @@ impl BitBoard {
         self.place_piece_on_square(Piece::Pawn, Color::White, A2);
     }
 
-    fn place_piece_on_square(&mut self, piece: Piece, color: Color, square: Square) -> Option<(Piece, Color)> {
+    pub fn place_piece_on_square(&mut self, piece: Piece, color: Color, square: Square) -> Option<(Piece, Color)> {
         self.occupancy.add_square(square);
         self.board[square.as_index()].replace((piece, color))
     }
 
-    fn remove_piece_from_square(&mut self, square: Square) -> Option<(Piece, Color)> {
+    pub fn remove_piece_from_square(&mut self, square: Square) -> Option<(Piece, Color)> {
         self.occupancy.remove_square(square);
         self.board[square.as_index()].take()
     }
 
     pub fn get_piece_on_square(&self, square: Square) -> Option<&(Piece, Color)> { self.board[square.as_index()].as_ref() }
-
-    pub fn move_piece(&mut self, from: Square, to: Square) -> Result<Option<(Piece, Color)>, IllegalMoveError> {
-        let (p, c) = match self.remove_piece_from_square(from) {
-            Some(p) => p,
-            None => return Err(IllegalMoveError::EmptySquare { s: from }),
-        };
-        Ok(self.place_piece_on_square(p, c, to))
-    }
 }

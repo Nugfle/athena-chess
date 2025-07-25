@@ -32,3 +32,16 @@ pub enum Color {
     White,
     Black,
 }
+
+impl Display for Color {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Color::White => "White",
+                Color::Black => "Black",
+            }
+        )
+    }
+}
