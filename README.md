@@ -26,7 +26,6 @@ Athena Chess is a configurable chess engine written in Rust, designed to run eit
 - **src/main.rs**: Entry point for CLI and service modes.
 - **benches/**: Criterion benchmarks for engine performance.
 
-The engine uses precomputed attack tables for fast move lookups, and bitwise operations for board state management. 
 ---
 
 ## Getting Started
