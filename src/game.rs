@@ -59,6 +59,14 @@ impl Game {
             return Err(IllegalMoveError::NotYourPiece { color: *c, square: from });
         }
 
+        // filter out all moves that would take own piece
+        if self.board.get_piece_on_square(to).is_some_and(|(_, col)| col == c) {
+            return Err(IllegalMoveError::TakesOwnPiece {
+                mv: mv,
+                piece: self.board.get_piece_on_square(to).unwrap().0,
+            });
+        }
+
         // check whether the move is valid for the type of piece
         match mv.get_piece() {
             Piece::Pawn if *p == Piece::Pawn && self.turn == Color::White => {
@@ -102,15 +110,8 @@ impl Game {
                         }) {
                             info!("en-pasent");
                             self.board.remove_piece_from_square(self.moves.last().unwrap().get_to());
-                        } else {
-                            // takes to the right
-                            match self.board.get_piece_on_square(to) {
-                                Some((pc, col)) if *col == self.turn => return Err(IllegalMoveError::TakesOwnPiece { mv: mv, piece: *pc }),
-                                None => {
-                                    return Err(IllegalMoveError::TakesEmptySquare { mv, square: to });
-                                }
-                                _ => {}
-                            }
+                        } else if self.board.get_piece_on_square(to).is_none() {
+                            return Err(IllegalMoveError::TakesEmptySquare { mv, square: to });
                         }
                     }
                     // takes to the left
@@ -123,14 +124,8 @@ impl Game {
                         }) {
                             info!("en-pasent");
                             self.board.remove_piece_from_square(self.moves.last().unwrap().get_to());
-                        } else {
-                            match self.board.get_piece_on_square(to) {
-                                Some((pc, col)) if *col == self.turn => return Err(IllegalMoveError::TakesOwnPiece { mv: mv, piece: *pc }),
-                                None => {
-                                    return Err(IllegalMoveError::TakesEmptySquare { mv, square: to });
-                                }
-                                _ => {}
-                            }
+                        } else if self.board.get_piece_on_square(to).is_none() {
+                            return Err(IllegalMoveError::TakesEmptySquare { mv, square: to });
                         }
                     }
                 }
@@ -166,6 +161,22 @@ impl Game {
                     }
 
                     // takes to the right
+                    if from.get_delta_file(to) == 1 {
+                        // if the previous move was a double pawn move on the file that we are moving
+                        // to and it put the pawn next to us.
+                        if self.moves.last().is_some_and(|m| {
+                            m.get_piece() == Piece::Pawn
+                                && m.get_from().get_delta_rank(m.get_to()).abs() == 2
+                                && m.get_to().get_file() == to.get_file()
+                                && m.get_to().get_rank() == from.get_rank()
+                        }) {
+                            info!("en-pasent");
+                            self.board.remove_piece_from_square(self.moves.last().unwrap().get_to());
+                        } else if self.board.get_piece_on_square(to).is_none() {
+                            return Err(IllegalMoveError::TakesEmptySquare { mv, square: to });
+                        }
+                    }
+                    // takes to the left
                     if from.get_delta_file(to) == -1 {
                         // if the previous move was a double pawn move on the file that we are moving
                         // to and it put the pawn next to us.
@@ -177,85 +188,41 @@ impl Game {
                         }) {
                             info!("en-pasent");
                             self.board.remove_piece_from_square(self.moves.last().unwrap().get_to());
-                        } else {
-                            // takes to the right
-                            match self.board.get_piece_on_square(to) {
-                                Some((pc, col)) if *col == self.turn => return Err(IllegalMoveError::TakesOwnPiece { mv: mv, piece: *pc }),
-                                None => {
-                                    return Err(IllegalMoveError::TakesEmptySquare { mv, square: to });
-                                }
-                                _ => {}
-                            }
-                        }
-                    }
-                    // takes to the left
-                    if from.get_delta_file(to) == -1 {
-                        if self.moves.last().is_some_and(|m| {
-                            m.get_piece() == Piece::Pawn
-                                && m.get_from().get_delta_rank(m.get_to()).abs() == 2
-                                && m.get_to().get_file() == to.get_file()
-                                && m.get_to().get_rank() == from.get_rank()
-                        }) {
-                            info!("en-pasent");
-                            self.board.remove_piece_from_square(self.moves.last().unwrap().get_to());
-                        } else {
-                            match self.board.get_piece_on_square(to) {
-                                Some((pc, col)) if *col == self.turn => return Err(IllegalMoveError::TakesOwnPiece { mv: mv, piece: *pc }),
-                                None => {
-                                    return Err(IllegalMoveError::TakesEmptySquare { mv, square: to });
-                                }
-                                _ => {}
-                            }
+                        } else if self.board.get_piece_on_square(to).is_none() {
+                            return Err(IllegalMoveError::TakesEmptySquare { mv, square: to });
                         }
                     }
                 }
             }
-            Piece::King { can_castle } if *p == Piece::King { can_castle: true } => todo!("compute on the fly"),
+            Piece::King { can_castle } if *p == Piece::King { can_castle: true } => {
+                // handles castling
+                if from.get_delta_file(to).abs() > 1 {
+                    if !can_castle {
+                        return Err(IllegalMoveError::MoveInvalid { mv });
+                    }
+                }
+            }
 
             Piece::Knight if *p == Piece::Knight => {
-                if ATTACK_TABLES.get_attack_pattern_knight(from).contains(to) {
-                    if let Some((taken_piece, col)) = self.board.get_piece_on_square(to) {
-                        if *col == self.turn {
-                            return Err(IllegalMoveError::TakesOwnPiece { mv: mv, piece: *taken_piece });
-                        }
-                    }
-                } else {
+                if !ATTACK_TABLES.get_attack_pattern_knight(from).contains(to) {
                     return Err(IllegalMoveError::MoveInvalid { mv: mv });
                 }
             }
 
             Piece::Bishop if *p == Piece::Bishop => {
-                if ATTACK_TABLES.get_attack_pattern_bishop(from, self.board.occupancy).contains(to) {
-                    if let Some((taken_piece, col)) = self.board.get_piece_on_square(to) {
-                        if *col == self.turn {
-                            return Err(IllegalMoveError::TakesOwnPiece { mv: mv, piece: *taken_piece });
-                        }
-                    }
-                } else {
+                if !ATTACK_TABLES.get_attack_pattern_bishop(from, self.board.occupancy).contains(to) {
                     return Err(IllegalMoveError::MoveInvalid { mv: mv });
                 }
             }
 
             Piece::Rook if *p == Piece::Rook => {
-                if ATTACK_TABLES.get_attack_pattern_rook(from, self.board.occupancy).contains(to) {
-                    if let Some((taken_piece, col)) = self.board.get_piece_on_square(to) {
-                        if *col == self.turn {
-                            return Err(IllegalMoveError::TakesOwnPiece { mv: mv, piece: *taken_piece });
-                        }
-                    }
-                } else {
+                if !ATTACK_TABLES.get_attack_pattern_rook(from, self.board.occupancy).contains(to) {
                     return Err(IllegalMoveError::MoveInvalid { mv: mv });
                 }
             }
 
             Piece::Queen if *p == Piece::Queen => {
-                if ATTACK_TABLES.get_attack_pattern_queen(from, self.board.occupancy).contains(to) {
-                    if let Some((taken_piece, col)) = self.board.get_piece_on_square(to) {
-                        if *col == self.turn {
-                            return Err(IllegalMoveError::TakesOwnPiece { mv: mv, piece: *taken_piece });
-                        }
-                    }
-                } else {
+                if !ATTACK_TABLES.get_attack_pattern_queen(from, self.board.occupancy).contains(to) {
                     return Err(IllegalMoveError::MoveInvalid { mv: mv });
                 }
             }
