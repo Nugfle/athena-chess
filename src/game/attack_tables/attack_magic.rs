@@ -4,8 +4,8 @@ use std::usize;
 
 use super::mask::BoardMask;
 use super::move_logic::*;
-use crate::engine::game::board::Occupancy;
-use crate::engine::game::board::square::Square;
+use crate::game::board::Occupancy;
+use crate::game::board::square::Square;
 
 /// the density with which the arrays will be paced. Increasing this will result in more sparsely
 /// populated arrays but faster times for finding magic numbers

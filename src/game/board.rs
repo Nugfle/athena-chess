@@ -4,8 +4,6 @@ pub mod square;
 use piece::{Color, Piece};
 use square::*;
 
-use crate::engine::game::error::IllegalMoveError;
-
 /// a representation of the board where each bit in the u64 represents the square on the board and
 /// whether it is occupied. This makes checking for blocking pieces as easy as applying a mask to
 /// the Occupancy and voila, you get all the squares with blocking pieces
@@ -13,11 +11,21 @@ use crate::engine::game::error::IllegalMoveError;
 pub struct Occupancy(pub u64);
 
 impl Occupancy {
-    pub fn add_square(&mut self, square: Square) { self.0 |= 1_u64 << square.as_u8(); }
-    pub fn with_square(&self, square: Square) -> Self { Occupancy(self.0 | 1_u64 << square.as_u8()) }
-    pub fn remove_square(&mut self, square: Square) { self.0 &= !(1_u64 << square.as_u8()); }
-    pub fn with_square_removed(&self, square: Square) -> Self { Occupancy(self.0 & !(1_u64 << square.as_u8())) }
-    pub fn is_occupied(&self, square: Square) -> bool { self.0 & 1_u64 << square.as_u8() != 0 }
+    pub fn add_square(&mut self, square: Square) {
+        self.0 |= 1_u64 << square.as_u8();
+    }
+    pub fn with_square(&self, square: Square) -> Self {
+        Occupancy(self.0 | 1_u64 << square.as_u8())
+    }
+    pub fn remove_square(&mut self, square: Square) {
+        self.0 &= !(1_u64 << square.as_u8());
+    }
+    pub fn with_square_removed(&self, square: Square) -> Self {
+        Occupancy(self.0 & !(1_u64 << square.as_u8()))
+    }
+    pub fn is_occupied(&self, square: Square) -> bool {
+        self.0 & 1_u64 << square.as_u8() != 0
+    }
 }
 
 /// represents the current Board state.
@@ -94,5 +102,7 @@ impl BitBoard {
         self.board[square.as_index()].take()
     }
 
-    pub fn get_piece_on_square(&self, square: Square) -> Option<&(Piece, Color)> { self.board[square.as_index()].as_ref() }
+    pub fn get_piece_on_square(&self, square: Square) -> Option<&(Piece, Color)> {
+        self.board[square.as_index()].as_ref()
+    }
 }

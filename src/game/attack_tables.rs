@@ -74,5 +74,7 @@ impl AttackTables {
     }
     /// retrieves the pattern describing all attacked squares for a knight standing at square.
     /// Note that the knight doesn't require an Occupancy as it is not a sliding piece.
-    pub fn get_attack_pattern_knight(&self, square: Square) -> BoardMask { self.knight_table[square.as_index()] }
+    pub fn get_attack_pattern_knight(&self, square: Square) -> BoardMask {
+        self.knight_table[square.as_index()]
+    }
 }

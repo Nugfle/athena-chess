@@ -1,6 +1,6 @@
-use crate::engine::Engine;
+use crate::game::Game;
 use error::ServiceError;
-use log::{info, log};
+use log::info;
 use std::net::SocketAddr;
 use tokio::net::{TcpListener, TcpStream, ToSocketAddrs};
 
@@ -25,17 +25,17 @@ impl AthenaServer {
 }
 
 pub struct AthenaService {
-    engine: Engine,
+    game: Game,
 }
 
 impl AthenaService {
     pub fn new() -> Self {
-        Self { engine: Engine::new() }
+        Self { game: Game::init() }
     }
 
     pub async fn run_service(&mut self, conn: TcpStream, addr: SocketAddr) -> Result<(), ServiceError> {
         info!("got connection from: {}", addr);
-        todo!();
+        todo!("implement simple protocol for chess engine interaction");
         Ok(())
     }
 }

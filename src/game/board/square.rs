@@ -94,10 +94,18 @@ pub enum Rank {
 pub struct Square(u8);
 
 impl Square {
-    pub fn new(s: u8) -> Option<Self> { if s < 64 { Some(Self(s)) } else { None } }
-    pub const fn from_rank_file(rank: Rank, file: File) -> Self { Self(rank as u8 * 8 + file as u8) }
-    pub fn as_index(&self) -> usize { self.0.into() }
-    pub fn as_u8(&self) -> u8 { self.0 }
+    pub fn new(s: u8) -> Option<Self> {
+        if s < 64 { Some(Self(s)) } else { None }
+    }
+    pub const fn from_rank_file(rank: Rank, file: File) -> Self {
+        Self(rank as u8 * 8 + file as u8)
+    }
+    pub fn as_index(&self) -> usize {
+        self.0.into()
+    }
+    pub fn as_u8(&self) -> u8 {
+        self.0
+    }
 }
 
 impl Display for Square {

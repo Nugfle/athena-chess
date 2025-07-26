@@ -3,13 +3,14 @@ use std::sync::LazyLock;
 
 use attack_tables::AttackTables;
 use board::BitBoard;
-use board::piece::{Color, Piece};
-use chess_move::Move;
+pub use board::piece::{Color, Piece};
+pub use board::square::*;
+pub use chess_move::Move;
 use error::IllegalMoveError;
 
 mod attack_tables;
 mod board;
-pub mod chess_move;
+mod chess_move;
 mod error;
 mod evaluation;
 
@@ -22,7 +23,9 @@ static ATTACK_TABLES: LazyLock<AttackTables> = LazyLock::new(|| {
 });
 
 #[cfg(feature = "benchmark")]
-pub fn create_tables() { AttackTables::create_tables(); }
+pub fn create_tables() {
+    AttackTables::create_tables();
+}
 
 #[derive(Debug, Clone)]
 pub struct Game {

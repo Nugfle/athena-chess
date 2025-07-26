@@ -1,13 +1,19 @@
-use crate::engine::Engine;
-
-mod engine;
-mod service;
+pub mod game;
 
 #[cfg(not(feature = "service"))]
 fn main() {
+    use crate::game::{File, Game, Move, Piece, Rank, Square};
+
     env_logger::builder().filter_level(log::LevelFilter::Info).try_init().unwrap();
     // initailize the engine
-    let engine = Engine::new();
+    let mut game = Game::init();
+    game.execute_move(Move::new(
+        Piece::Pawn,
+        Square::from_rank_file(Rank::Two, File::E),
+        Square::from_rank_file(Rank::Four, File::E),
+        None,
+    ))
+    .unwrap();
 }
 
 #[cfg(feature = "service")]
@@ -16,6 +22,8 @@ async fn main() {
     use std::env;
     use std::net::Ipv4Addr;
     use std::net::SocketAddr;
+    mod service;
+
     env_logger::builder().filter_level(log::LevelFilter::Info).try_init().unwrap();
 
     let port: u16 = env::args().nth(1).unwrap().parse().unwrap();

@@ -1,7 +1,6 @@
 use thiserror::Error;
 
-use crate::engine::game::board::piece::{Color, Piece};
-
+use super::board::piece::{Color, Piece};
 use super::board::square::Square;
 use super::chess_move::Move;
 
