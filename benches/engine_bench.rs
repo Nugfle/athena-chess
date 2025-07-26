@@ -1,9 +1,11 @@
-use athena_chess::engine::create_tables;
+use athena_chess::game::create_tables;
 use criterion::{Criterion, criterion_group, criterion_main};
 use std::time::Duration;
 
 /// profiles the speed for creating a attack pattern table
-fn bench_table_creation(c: &mut Criterion) { c.bench_function("create tables", |b| b.iter(|| create_tables())); }
+fn bench_table_creation(c: &mut Criterion) {
+    c.bench_function("create tables", |b| b.iter(|| create_tables()));
+}
 
 /// creates the config to use for the attack pattern table creation benchmark
 fn criterion_config() -> Criterion {
