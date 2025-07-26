@@ -2,12 +2,12 @@ use std::fmt::Display;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Piece {
-    Pawn,
+    Pawn { en_pasent: bool },
     Knight,
     Bishop,
     Rook,
     Queen,
-    King,
+    King { can_castle: bool },
 }
 
 impl Display for Piece {
@@ -16,12 +16,12 @@ impl Display for Piece {
             f,
             "{}",
             match self {
-                Self::Pawn => "",
+                Self::Pawn { .. } => "",
                 Self::Knight => "N",
                 Self::Bishop => "B",
                 Self::Rook => "R",
                 Self::Queen => "Q",
-                Self::King => "K",
+                Self::King { .. } => "K",
             }
         )
     }

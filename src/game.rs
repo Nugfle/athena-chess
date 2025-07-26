@@ -56,8 +56,32 @@ impl Game {
 
             // check whether the move is valid for the type of piece
             match mv.get_piece() {
-                Piece::Pawn if *p == Piece::Pawn => todo!("compute on the fly"),
-                Piece::King if *p == Piece::King => todo!("compute on the fly"),
+                Piece::Pawn { en_pasent } if *p == Piece::Pawn { en_pasent: false } => match self.turn {
+                    Color::White => {
+                        let from = mv.get_from();
+                        let to = mv.get_to();
+                        // pawns must move foward
+                        if from.get_rank() <= to.get_rank() {
+                            return Err(IllegalMoveError::MoveInvalid { mv });
+                        }
+                        // pawn can at most move 2 ranks
+                        if from.get_delta_rank(to) > 2 {
+                            return Err(IllegalMoveError::MoveInvalid { mv });
+                        }
+                        // handle double moves
+                        if from.get_delta_rank(to) == 2 {
+                            // double moves may only happen in a straight line
+                            if from.get_delta_file(to) != 0 {
+                                return Err(IllegalMoveError::MoveInvalid { mv });
+                            }
+                            if self.board.is_occupied(from.move_on_file(1).unwrap()) {
+                                return Err(IllegalMoveError::MoveInvalid { mv });
+                            }
+                        }
+                    }
+                    Color::Black => {}
+                },
+                Piece::King { can_castle } if *p == Piece::King { can_castle: true } => todo!("compute on the fly"),
 
                 Piece::Knight if *p == Piece::Knight => {
                     if ATTACK_TABLES.get_attack_pattern_knight(mv.get_from()).contains(mv.get_to()) {
@@ -66,6 +90,8 @@ impl Game {
                                 return Err(IllegalMoveError::TakesOwnPiece { mv: mv, piece: *taken_piece });
                             }
                         }
+                    } else {
+                        return Err(IllegalMoveError::MoveInvalid { mv: mv });
                     }
                 }
 
@@ -79,6 +105,8 @@ impl Game {
                                 return Err(IllegalMoveError::TakesOwnPiece { mv: mv, piece: *taken_piece });
                             }
                         }
+                    } else {
+                        return Err(IllegalMoveError::MoveInvalid { mv: mv });
                     }
                 }
 
@@ -92,6 +120,8 @@ impl Game {
                                 return Err(IllegalMoveError::TakesOwnPiece { mv: mv, piece: *taken_piece });
                             }
                         }
+                    } else {
+                        return Err(IllegalMoveError::MoveInvalid { mv: mv });
                     }
                 }
 
@@ -105,6 +135,8 @@ impl Game {
                                 return Err(IllegalMoveError::TakesOwnPiece { mv: mv, piece: *taken_piece });
                             }
                         }
+                    } else {
+                        return Err(IllegalMoveError::MoveInvalid { mv: mv });
                     }
                 }
 

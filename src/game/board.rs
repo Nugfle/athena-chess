@@ -61,7 +61,7 @@ impl BitBoard {
         self.place_piece_on_square(Piece::Knight, Color::Black, B8);
         self.place_piece_on_square(Piece::Bishop, Color::Black, F8);
         self.place_piece_on_square(Piece::Bishop, Color::Black, C8);
-        self.place_piece_on_square(Piece::King, Color::Black, E8);
+        self.place_piece_on_square(Piece::King { can_castle: true }, Color::Black, E8);
         self.place_piece_on_square(Piece::Queen, Color::Black, D8);
 
         self.place_piece_on_square(Piece::Rook, Color::White, H1);
@@ -70,26 +70,26 @@ impl BitBoard {
         self.place_piece_on_square(Piece::Knight, Color::White, B1);
         self.place_piece_on_square(Piece::Bishop, Color::White, F1);
         self.place_piece_on_square(Piece::Bishop, Color::White, C1);
-        self.place_piece_on_square(Piece::King, Color::White, E1);
+        self.place_piece_on_square(Piece::King { can_castle: true }, Color::White, E1);
         self.place_piece_on_square(Piece::Queen, Color::White, D1);
 
-        self.place_piece_on_square(Piece::Pawn, Color::Black, H7);
-        self.place_piece_on_square(Piece::Pawn, Color::Black, G7);
-        self.place_piece_on_square(Piece::Pawn, Color::Black, F7);
-        self.place_piece_on_square(Piece::Pawn, Color::Black, E7);
-        self.place_piece_on_square(Piece::Pawn, Color::Black, D7);
-        self.place_piece_on_square(Piece::Pawn, Color::Black, C7);
-        self.place_piece_on_square(Piece::Pawn, Color::Black, B7);
-        self.place_piece_on_square(Piece::Pawn, Color::Black, A7);
+        self.place_piece_on_square(Piece::Pawn { en_pasent: false }, Color::Black, H7);
+        self.place_piece_on_square(Piece::Pawn { en_pasent: false }, Color::Black, G7);
+        self.place_piece_on_square(Piece::Pawn { en_pasent: false }, Color::Black, F7);
+        self.place_piece_on_square(Piece::Pawn { en_pasent: false }, Color::Black, E7);
+        self.place_piece_on_square(Piece::Pawn { en_pasent: false }, Color::Black, D7);
+        self.place_piece_on_square(Piece::Pawn { en_pasent: false }, Color::Black, C7);
+        self.place_piece_on_square(Piece::Pawn { en_pasent: false }, Color::Black, B7);
+        self.place_piece_on_square(Piece::Pawn { en_pasent: false }, Color::Black, A7);
 
-        self.place_piece_on_square(Piece::Pawn, Color::White, H2);
-        self.place_piece_on_square(Piece::Pawn, Color::White, G2);
-        self.place_piece_on_square(Piece::Pawn, Color::White, F2);
-        self.place_piece_on_square(Piece::Pawn, Color::White, E2);
-        self.place_piece_on_square(Piece::Pawn, Color::White, D2);
-        self.place_piece_on_square(Piece::Pawn, Color::White, C2);
-        self.place_piece_on_square(Piece::Pawn, Color::White, B2);
-        self.place_piece_on_square(Piece::Pawn, Color::White, A2);
+        self.place_piece_on_square(Piece::Pawn { en_pasent: false }, Color::White, H2);
+        self.place_piece_on_square(Piece::Pawn { en_pasent: false }, Color::White, G2);
+        self.place_piece_on_square(Piece::Pawn { en_pasent: false }, Color::White, F2);
+        self.place_piece_on_square(Piece::Pawn { en_pasent: false }, Color::White, E2);
+        self.place_piece_on_square(Piece::Pawn { en_pasent: false }, Color::White, D2);
+        self.place_piece_on_square(Piece::Pawn { en_pasent: false }, Color::White, C2);
+        self.place_piece_on_square(Piece::Pawn { en_pasent: false }, Color::White, B2);
+        self.place_piece_on_square(Piece::Pawn { en_pasent: false }, Color::White, A2);
     }
 
     pub fn place_piece_on_square(&mut self, piece: Piece, color: Color, square: Square) -> Option<(Piece, Color)> {
@@ -104,5 +104,9 @@ impl BitBoard {
 
     pub fn get_piece_on_square(&self, square: Square) -> Option<&(Piece, Color)> {
         self.board[square.as_index()].as_ref()
+    }
+
+    pub fn is_occupied(&self, square: Square) -> bool {
+        self.occupancy.is_occupied(square)
     }
 }

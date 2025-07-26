@@ -135,7 +135,7 @@ fn find_valid_magic_number(mask: BoardMask, arr_size: usize, occupancies: &Vec<O
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::engine::game::board::square::*;
+    use crate::game::board::square::*;
 
     #[test]
     fn test_find_valid_magic_num() {

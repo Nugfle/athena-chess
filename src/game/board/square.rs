@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+use crate::game::error::ChessError;
+
 pub const A1: Square = Square::from_rank_file(Rank::One, File::A);
 pub const A2: Square = Square::from_rank_file(Rank::Two, File::A);
 pub const A3: Square = Square::from_rank_file(Rank::Three, File::A);
@@ -65,7 +67,8 @@ pub const H6: Square = Square::from_rank_file(Rank::Six, File::H);
 pub const H7: Square = Square::from_rank_file(Rank::Seven, File::H);
 pub const H8: Square = Square::from_rank_file(Rank::Eight, File::H);
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// an enum representing the files on a chess board used for save construction of squares.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum File {
     A = 0,
     B = 1,
@@ -77,7 +80,8 @@ pub enum File {
     H = 7,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// an enum representing the ranks on a chess board used for save construction of squares.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Rank {
     One = 0,
     Two = 1,
@@ -94,17 +98,142 @@ pub enum Rank {
 pub struct Square(u8);
 
 impl Square {
-    pub fn new(s: u8) -> Option<Self> {
-        if s < 64 { Some(Self(s)) } else { None }
+    /// use of this function is highly discouraged, as it can easily lead to errors. Please use the
+    /// from_rank_file method instead.
+    ///```
+    /// use athena_chess::game::*;
+    /// assert_eq!(Square::new(9).unwrap(), B2);
+    ///```
+    pub fn new(s: u8) -> Result<Self, ChessError> {
+        if s < 64 {
+            Ok(Self(s))
+        } else {
+            Err(ChessError::InvalidSquare { square: s })
+        }
     }
+
+    ///```
+    /// use athena_chess::game::*;
+    /// assert_eq!(Square::from_rank_file(Rank::Four, File::A), A4);
+    ///```
     pub const fn from_rank_file(rank: Rank, file: File) -> Self {
         Self(rank as u8 * 8 + file as u8)
     }
+
+    ///```
+    /// use athena_chess::game::*;
+    /// assert_eq!(A1.as_index(), 0);
+    /// assert_eq!(B2.as_index(), 9);
+    /// assert_eq!(H8.as_index(), 63);
+    ///```
     pub fn as_index(&self) -> usize {
         self.0.into()
     }
+
+    ///```
+    /// use athena_chess::game::*;
+    /// assert_eq!(A1.as_u8(), 0);
+    /// assert_eq!(B2.as_u8(), 9);
+    /// assert_eq!(H8.as_u8(), 63);
+    ///```
     pub fn as_u8(&self) -> u8 {
         self.0
+    }
+
+    ///```
+    /// use athena_chess::game::*;
+    /// assert_eq!(E4.get_rank(), Rank::Four);
+    /// assert_eq!(A1.get_rank(), Rank::One);
+    ///```
+    pub fn get_rank(&self) -> Rank {
+        match self.as_u8() / 8 {
+            0 => Rank::One,
+            1 => Rank::Two,
+            2 => Rank::Three,
+            3 => Rank::Four,
+            4 => Rank::Five,
+            5 => Rank::Six,
+            6 => Rank::Seven,
+            7 => Rank::Eight,
+            _ => panic!("invalid square, is outside of board"),
+        }
+    }
+
+    ///```
+    /// use athena_chess::game::*;
+    /// assert_eq!(E4.get_file(), File::E);
+    /// assert_eq!(A1.get_file(), File::A);
+    ///```
+    pub fn get_file(&self) -> File {
+        match self.as_u8() % 8 {
+            0 => File::A,
+            1 => File::B,
+            2 => File::C,
+            3 => File::D,
+            4 => File::E,
+            5 => File::F,
+            6 => File::G,
+            7 => File::H,
+            _ => panic!("invalid square, is outside of board"),
+        }
+    }
+
+    /// moves the square by delta on the current rank
+    ///```
+    /// use athena_chess::game::*;
+    /// assert_eq!(E4.move_on_rank(-2).unwrap(), C4);
+    /// assert_eq!(A1.move_on_rank(1).unwrap(), B1);
+    ///```
+    pub fn move_on_rank(&self, delta: i8) -> Result<Self, ChessError> {
+        let s = self.0 as i8 + delta;
+        if s < 0 || s >= 64 {
+            return Err(ChessError::InvalidSquare { square: s as u8 });
+        }
+        let n = Self::new(s as u8).unwrap();
+        if n.get_rank() != self.get_rank() {
+            return Err(ChessError::InvalidSquare { square: n.as_u8() });
+        }
+        Ok(n)
+    }
+
+    /// moves the square by delta on the current file
+    ///```
+    /// use athena_chess::game::*;
+    /// assert_eq!(E4.move_on_file(-2).unwrap(), E2);
+    /// assert_eq!(A1.move_on_file(1).unwrap(), A2);
+    ///´´´
+    pub fn move_on_file(&self, delta: i8) -> Result<Self, ChessError> {
+        let s = self.0 as i8 + delta * 8;
+        if s < 0 || s >= 64 {
+            return Err(ChessError::InvalidSquare { square: s as u8 });
+        }
+        let n = Self::new(s as u8).unwrap();
+        if n.get_file() != self.get_file() {
+            return Err(ChessError::InvalidSquare { square: n.as_u8() });
+        }
+        Ok(n)
+    }
+
+    /// moves the square by delta on the current file
+    ///```
+    /// use athena_chess::game::*;
+    /// assert_eq!(E4.get_delta_rank(E8), 4);
+    /// assert_eq!(C8.get_delta_rank(C6), -2);
+    /// assert_eq!(A3.get_delta_rank(G5), 2);
+    ///´´´
+    pub fn get_delta_rank(&self, other: Self) -> i8 {
+        other.get_rank() as i8 - self.get_rank() as i8
+    }
+
+    /// moves the square by delta on the current file
+    ///```
+    /// use athena_chess::game::*;
+    /// assert_eq!(A4.get_delta_file(E4), 4);
+    /// assert_eq!(F8.get_delta_file(C8), -3);
+    /// assert_eq!(A3.get_delta_file(G5), 6);
+    ///´´´
+    pub fn get_delta_file(&self, other: Self) -> i8 {
+        other.get_file() as i8 - self.get_file() as i8
     }
 }
 

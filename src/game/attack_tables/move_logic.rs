@@ -204,7 +204,7 @@ pub fn create_bishop_attack_pattern(square: Square, occupancy: Occupancy) -> Boa
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::engine::game::board::square::*;
+    use crate::game::board::square::*;
 
     fn squares_from_mask(mask: BoardMask) -> Vec<String> {
         let mut squares = Vec::new();
