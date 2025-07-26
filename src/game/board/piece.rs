@@ -1,8 +1,8 @@
-use std::fmt::Display;
+use std::{fmt::Display, ops::Not};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Piece {
-    Pawn { en_pasent: bool },
+    Pawn,
     Knight,
     Bishop,
     Rook,
@@ -43,5 +43,15 @@ impl Display for Color {
                 Color::Black => "Black",
             }
         )
+    }
+}
+
+impl Not for Color {
+    type Output = Self;
+    fn not(self) -> Self::Output {
+        match self {
+            Self::White => Self::Black,
+            Self::Black => Self::White,
+        }
     }
 }

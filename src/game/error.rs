@@ -32,4 +32,10 @@ pub enum IllegalMoveError {
 
     #[error("the move: {mv}, takes your own piece: {piece}.")]
     TakesOwnPiece { mv: Move, piece: Piece },
+
+    #[error("the move: {mv}, tries to take an empty square: {square} with a pawn")]
+    TakesEmptySquare { mv: Move, square: Square },
+
+    #[error("cant do the move: {mv}, the square: {square} is blocked")]
+    Blocked { mv: Move, square: Square },
 }
