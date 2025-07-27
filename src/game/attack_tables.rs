@@ -1,14 +1,13 @@
 use super::board::Occupancy;
 use super::board::square::*;
 
+use super::mask::BoardMask;
 use attack_magic::AttackMagic;
-use mask::BoardMask;
 use move_logic::create_knight_attack_pattern;
 
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 mod attack_magic;
-mod mask;
 mod move_logic;
 
 /// hold the attack tables for rook, bishop and knight, which are precomputed at engine startup.

@@ -65,4 +65,7 @@ impl BoardMask {
     pub fn count_ones(&self) -> u32 {
         self.0.count_ones()
     }
+    pub fn add_squares(&mut self, squares: impl IntoIterator<Item = Square>) {
+        squares.into_iter().for_each(|sq| self.add_square(sq));
+    }
 }

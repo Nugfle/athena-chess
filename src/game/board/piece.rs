@@ -5,9 +5,9 @@ pub enum Piece {
     Pawn,
     Knight,
     Bishop,
-    Rook,
+    Rook { has_moved: bool },
     Queen,
-    King { can_castle: bool },
+    King { has_moved: bool },
 }
 
 impl Display for Piece {
@@ -16,10 +16,10 @@ impl Display for Piece {
             f,
             "{}",
             match self {
-                Self::Pawn { .. } => "",
+                Self::Pawn => "",
                 Self::Knight => "N",
                 Self::Bishop => "B",
-                Self::Rook => "R",
+                Self::Rook { .. } => "R",
                 Self::Queen => "Q",
                 Self::King { .. } => "K",
             }
