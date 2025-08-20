@@ -152,16 +152,46 @@ impl Game {
             Piece::King { has_moved } => {
                 // handles castling
                 if from.get_delta_file(to).abs() > 1 {
-                    if has_moved {
+                    // if we castle we can only move on the same rank and the king must not have
+                    // moved
+                    if has_moved || from.get_delta_rank(to) != 0 {
                         return Err(IllegalMoveError::MoveInvalid { mv });
-                    }
-                    // long castle
-                    if from.get_delta_file(to) == -3 {
+                    } else if from.get_delta_file(to) == -3 {
+                        // long castle
+                        let rook_sq = Square::from_rank_file(from.get_rank(), File::A);
+                        if let Some((pc, col)) = self.board.get_piece_on_square(rook_sq) {
+                            if *col != self.turn {
+                                return Err(IllegalMoveError::NotYourPiece {
+                                    color: *col,
+                                    square: rook_sq,
+                                });
+                            }
+                            match pc {
+                                Piece::Rook { has_moved } if !has_moved => {
+                                    if self.board.is_occupied(Square::from_rank_file(from.get_rank(), File::B))
+                                        || self.board.is_occupied(Square::from_rank_file(from.get_rank(), File::C))
+                                        || self.board.is_occupied(Square::from_rank_file(from.get_rank(), File::D))
+                                    {
+                                        return Err(IllegalMoveError::Blocked { mv, square: mv.get_to() });
+                                    }
+                                }
+                                Piece::Rook { has_moved } if *has_moved => return Err(IllegalMoveError::MoveInvalid { mv }),
+                                _ => {
+                                    return Err(IllegalMoveError::DifferentPiece {
+                                        expected: Piece::Rook { has_moved: false },
+                                        found: *pc,
+                                    });
+                                }
+                            }
+                        } else {
+                            return Err(IllegalMoveError::EmptySquare { square: rook_sq });
+                        }
                         todo!("check whether clear line to rook")
-                    }
-                    // short castle
-                    if from.get_delta_file(to) == 2 {
+                    } else if from.get_delta_file(to) == 2 {
+                        // short castle
                         todo!("check whether clear line to rook")
+                    } else {
+                        return Err(IllegalMoveError::MoveInvalid { mv });
                     }
                 }
             }

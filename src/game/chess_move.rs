@@ -11,11 +11,21 @@ pub struct Move {
     takes: Option<Piece>,
 }
 impl Move {
-    pub fn new(piece: Piece, from: Square, to: Square, takes: Option<Piece>) -> Self { Self { piece, from, to, takes } }
-    pub fn get_from(&self) -> Square { self.from }
-    pub fn get_to(&self) -> Square { self.to }
-    pub fn get_piece(&self) -> Piece { self.piece }
-    pub fn set_takes(&mut self, piece: Option<Piece>) { self.takes = piece }
+    pub fn new(piece: Piece, from: Square, to: Square, takes: Option<Piece>) -> Self {
+        Self { piece, from, to, takes }
+    }
+    pub fn get_from(&self) -> Square {
+        self.from
+    }
+    pub fn get_to(&self) -> Square {
+        self.to
+    }
+    pub fn get_piece(&self) -> Piece {
+        self.piece
+    }
+    pub fn set_takes(&mut self, piece: Option<Piece>) {
+        self.takes = piece
+    }
 }
 
 impl Display for Move {
