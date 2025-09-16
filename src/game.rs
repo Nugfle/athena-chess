@@ -226,9 +226,7 @@ impl Game {
 
         let (temp_p, temp_c) = self.board.remove_piece_from_square(from).expect("checked that from is Some");
 
-        let takes = self
-            .board
-            .place_piece_on_square(temp_p, temp_c, to).map(|(taken, _)| taken);
+        let takes = self.board.place_piece_on_square(temp_p, temp_c, to).map(|(taken, _)| taken);
 
         mv.set_takes(takes);
         self.moves.push(mv);
