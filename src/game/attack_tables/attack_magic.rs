@@ -28,7 +28,7 @@ pub struct AttackMagic {
 impl AttackMagic {
     /// creates magic numbers and computes the attack patterns for the given square
     pub fn create_attack_magic_rook(square: Square) -> Self {
-        info!("creating rook magic for {}", square);
+        info!("creating rook magic for {square}");
         let mask = create_rook_mask(square);
 
         let required_bits = (mask.0.count_ones() + H) as u8;
@@ -54,7 +54,7 @@ impl AttackMagic {
 
     /// creates magic numbers and computes the attack patterns for the given square
     pub fn create_attack_magic_bishop(square: Square) -> Self {
-        info!("creating bishop magic for {}", square);
+        info!("creating bishop magic for {square}");
         let mask = create_bishop_mask(square);
 
         let required_bits = (mask.0.count_ones() + H) as u8;

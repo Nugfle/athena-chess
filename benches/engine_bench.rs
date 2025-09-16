@@ -1,3 +1,4 @@
+#![cfg(feature = "benchmark")]
 use athena_chess::game::create_tables;
 use criterion::{Criterion, criterion_group, criterion_main};
 use std::time::Duration;

@@ -20,7 +20,7 @@ static ATTACK_TABLES: LazyLock<AttackTables> = LazyLock::new(|| {
     let start = std::time::Instant::now();
     let at = AttackTables::create_tables();
     let took = start.elapsed().as_millis();
-    info!("built attack tables, took {} ms...", took);
+    info!("built attack tables, took {took} ms...");
     at
 });
 
@@ -63,12 +63,12 @@ impl Game {
             }
             if self.board.is_occupied(from.move_on_file(color).unwrap()) {
                 return Err(IllegalMoveError::Blocked {
-                    mv: mv,
+                    mv,
                     square: from.move_on_file(color).unwrap(),
                 });
             }
             if self.board.is_occupied(to) {
-                return Err(IllegalMoveError::Blocked { mv: mv, square: to });
+                return Err(IllegalMoveError::Blocked { mv, square: to });
             }
         }
 
@@ -138,7 +138,7 @@ impl Game {
         // filter out all moves that would take own piece
         if self.board.get_piece_on_square(to).is_some_and(|(_, col)| *col == c) {
             return Err(IllegalMoveError::TakesOwnPiece {
-                mv: mv,
+                mv,
                 piece: self.board.get_piece_on_square(to).unwrap().0,
             });
         }
@@ -201,25 +201,25 @@ impl Game {
 
             Piece::Knight => {
                 if !ATTACK_TABLES.get_attack_pattern_knight(from).contains(to) {
-                    return Err(IllegalMoveError::MoveInvalid { mv: mv });
+                    return Err(IllegalMoveError::MoveInvalid { mv });
                 }
             }
 
             Piece::Bishop => {
                 if !ATTACK_TABLES.get_attack_pattern_bishop(from, self.board.occupancy).contains(to) {
-                    return Err(IllegalMoveError::MoveInvalid { mv: mv });
+                    return Err(IllegalMoveError::MoveInvalid { mv });
                 }
             }
 
             Piece::Rook { .. } => {
                 if !ATTACK_TABLES.get_attack_pattern_rook(from, self.board.occupancy).contains(to) {
-                    return Err(IllegalMoveError::MoveInvalid { mv: mv });
+                    return Err(IllegalMoveError::MoveInvalid { mv });
                 }
             }
 
             Piece::Queen => {
                 if !ATTACK_TABLES.get_attack_pattern_queen(from, self.board.occupancy).contains(to) {
-                    return Err(IllegalMoveError::MoveInvalid { mv: mv });
+                    return Err(IllegalMoveError::MoveInvalid { mv });
                 }
             }
         }
@@ -228,8 +228,7 @@ impl Game {
 
         let takes = self
             .board
-            .place_piece_on_square(temp_p, temp_c, to)
-            .and_then(|(taken, _)| Some(taken));
+            .place_piece_on_square(temp_p, temp_c, to).map(|(taken, _)| taken);
 
         mv.set_takes(takes);
         self.moves.push(mv);

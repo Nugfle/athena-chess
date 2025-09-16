@@ -35,7 +35,7 @@ impl Display for Move {
             "{}{}{}{}",
             self.piece,
             self.from,
-            self.takes.and_then(|_| Some("x")).unwrap_or(""),
+            self.takes.map(|_| "x").unwrap_or(""),
             self.to
         )
     }

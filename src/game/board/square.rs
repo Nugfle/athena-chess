@@ -186,7 +186,7 @@ impl Square {
     ///```
     pub fn move_on_rank(&self, delta: i8) -> Result<Self, ChessError> {
         let s = self.0 as i8 + delta;
-        if s < 0 || s >= 64 {
+        if !(0..64).contains(&s) {
             return Err(ChessError::InvalidSquare { square: s as u8 });
         }
         let n = Self::new(s as u8).unwrap();
@@ -204,7 +204,7 @@ impl Square {
     ///´´´
     pub fn move_on_file(&self, delta: i8) -> Result<Self, ChessError> {
         let s = self.0 as i8 + delta * 8;
-        if s < 0 || s >= 64 {
+        if !(0..64).contains(&s) {
             return Err(ChessError::InvalidSquare { square: s as u8 });
         }
         let n = Self::new(s as u8).unwrap();
