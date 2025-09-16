@@ -174,6 +174,9 @@ impl Game {
                                     {
                                         return Err(IllegalMoveError::Blocked { mv, square: mv.get_to() });
                                     }
+                                    // we have a clear line to an unmoved rook
+                                    // now we need to check whether the field the king and rook are
+                                    // moving to are in the attack squares of any enemy piece
                                 }
                                 Piece::Rook { has_moved } if *has_moved => return Err(IllegalMoveError::MoveInvalid { mv }),
                                 _ => {

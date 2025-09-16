@@ -8,7 +8,7 @@ fn main() {
     // initailize the engine
     let mut game = Game::init();
     game.execute_move(Move::new(
-        Piece::Pawn { en_pasent: false },
+        Piece::Pawn,
         Square::from_rank_file(Rank::Two, File::E),
         Square::from_rank_file(Rank::Four, File::E),
         None,

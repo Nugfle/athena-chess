@@ -1,6 +1,6 @@
-use super::mask::BoardMask;
-use crate::game::board::square::Square;
+use crate::game::BoardMask;
 use crate::game::board::Occupancy;
+use crate::game::board::square::Square;
 
 /// the knight is no sliding piece, so we don't need to consider occupancy patterns for the knights
 /// movement. Therefore the logic is fairly straight forward

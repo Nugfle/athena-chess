@@ -2,8 +2,8 @@ use log::info;
 use rand::{self, random};
 use std::usize;
 
-use super::mask::BoardMask;
 use super::move_logic::*;
+use crate::game::BoardMask;
 use crate::game::board::Occupancy;
 use crate::game::board::square::Square;
 
