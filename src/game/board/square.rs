@@ -97,6 +97,17 @@ pub enum Rank {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, PartialOrd, Ord)]
 pub struct Square(u8);
 
+impl TryFrom<usize> for Square {
+    type Error = ChessError;
+    fn try_from(value: usize) -> Result<Self, Self::Error> {
+        if 0 < value && value < 64 {
+            Ok(Square(value as u8))
+        } else {
+            Err(ChessError::InvalidSquare { square: value as u8 })
+        }
+    }
+}
+
 impl Square {
     /// use of this function is highly discouraged, as it can easily lead to errors. Please use the
     /// from_rank_file method instead.

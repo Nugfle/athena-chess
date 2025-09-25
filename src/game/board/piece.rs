@@ -27,6 +27,45 @@ impl Display for Piece {
     }
 }
 
+impl Piece {
+    pub fn is_pawn(&self) -> bool {
+        match self {
+            Self::Pawn => true,
+            _ => false,
+        }
+    }
+    pub fn is_knight(&self) -> bool {
+        match self {
+            Self::Knight => true,
+            _ => false,
+        }
+    }
+    pub fn is_bishop(&self) -> bool {
+        match self {
+            Self::Bishop => true,
+            _ => false,
+        }
+    }
+    pub fn is_rook(&self) -> bool {
+        match self {
+            Self::Rook { .. } => true,
+            _ => false,
+        }
+    }
+    pub fn is_queen(&self) -> bool {
+        match self {
+            Self::Queen => true,
+            _ => false,
+        }
+    }
+    pub fn is_king(&self) -> bool {
+        match self {
+            Self::King { .. } => true,
+            _ => false,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Color {
     White,

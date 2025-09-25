@@ -4,6 +4,8 @@ pub mod square;
 use piece::{Color, Piece};
 use square::*;
 
+use crate::game::ATTACK_TABLES;
+
 /// a representation of the board where each bit in the u64 represents the square on the board and
 /// whether it is occupied. This makes checking for blocking pieces as easy as applying a mask to
 /// the Occupancy and voila, you get all the squares with blocking pieces
@@ -20,6 +22,7 @@ impl Occupancy {
     pub fn remove_square(&mut self, square: Square) {
         self.0 &= !(1_u64 << square.as_u8());
     }
+    #[allow(unused)]
     pub fn with_square_removed(&self, square: Square) -> Self {
         Occupancy(self.0 & !(1_u64 << square.as_u8()))
     }
@@ -52,6 +55,71 @@ impl BitBoard {
         let mut bb = Self::default();
         bb.setup_for_game();
         bb
+    }
+
+    /// returns true if the square is under attack by a piece from the given color. Note that this
+    /// function does not check for pins.
+    pub fn square_is_controlled_by(&self, square: Square, color: Color) -> bool {
+        let rook_pattern = ATTACK_TABLES.get_attack_pattern_rook(square, self.occupancy);
+        let knight_pattern = ATTACK_TABLES.get_attack_pattern_knight(square);
+        let bishop_pattern = ATTACK_TABLES.get_attack_pattern_bishop(square, self.occupancy);
+        // checks for major pieces
+        if self
+            .board
+            .iter()
+            .enumerate()
+            .find(|(i, p)| {
+                p.is_some_and(|(piece, col)| {
+                    let s = Square::try_from(*i).unwrap();
+                    col == color
+                        && ((rook_pattern.contains(s) && (piece.is_rook() || piece.is_queen()))
+                            || (bishop_pattern.contains(s) && piece.is_bishop() || piece.is_queen())
+                            || (knight_pattern.contains(s) && piece.is_knight()))
+                })
+            })
+            .is_some()
+        {
+            return true;
+        }
+        // checks for king
+        if square.move_on_rank(1).is_ok_and(|s| {
+            self.board[s.as_index()].is_some_and(|(piece, col)| piece.is_king() && col == color)
+                || s.move_on_file(1).is_ok_and(|sf| {
+                    self.board[sf.as_index()]
+                        .is_some_and(|(piece, col)| col == color && ((piece.is_king()) || (piece.is_pawn() && color == Color::Black)))
+                })
+        }) {
+            return true;
+        }
+        if square.move_on_rank(-1).is_ok_and(|s| {
+            self.board[s.as_index()].is_some_and(|(piece, col)| piece.is_king() && col == color)
+                || s.move_on_file(-1).is_ok_and(|sf| {
+                    self.board[sf.as_index()]
+                        .is_some_and(|(piece, col)| col == color && ((piece.is_king()) || (piece.is_pawn() && color == Color::White)))
+                })
+        }) {
+            return true;
+        }
+        if square.move_on_rank(1).is_ok_and(|s| {
+            self.board[s.as_index()].is_some_and(|(piece, col)| piece.is_king() && col == color)
+                || s.move_on_file(-1).is_ok_and(|sf| {
+                    self.board[sf.as_index()]
+                        .is_some_and(|(piece, col)| col == color && ((piece.is_king()) || (piece.is_pawn() && color == Color::Black)))
+                })
+        }) {
+            return true;
+        }
+        if square.move_on_rank(-1).is_ok_and(|s| {
+            self.board[s.as_index()].is_some_and(|(piece, col)| piece.is_king() && col == color)
+                || s.move_on_file(-1).is_ok_and(|sf| {
+                    self.board[sf.as_index()]
+                        .is_some_and(|(piece, col)| col == color && ((piece.is_king()) || (piece.is_pawn() && color == Color::White)))
+                })
+        }) {
+            return true;
+        }
+
+        false
     }
 
     fn setup_for_game(&mut self) {

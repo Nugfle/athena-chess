@@ -113,6 +113,93 @@ impl Game {
         }
         Ok(())
     }
+    fn short_castle(&mut self, from: Square, mv: Move) -> Result<(), IllegalMoveError> {
+        let rook_sq = Square::from_rank_file(from.get_rank(), File::H);
+        if let Some((pc, col)) = self.board.get_piece_on_square(rook_sq) {
+            if *col != self.turn {
+                return Err(IllegalMoveError::NotYourPiece {
+                    color: *col,
+                    square: rook_sq,
+                });
+            }
+            match pc {
+                Piece::Rook { has_moved } if !has_moved => {
+                    let f = Square::from_rank_file(from.get_rank(), File::F);
+                    let g = Square::from_rank_file(from.get_rank(), File::G);
+
+                    if self.board.is_occupied(f) || self.board.is_occupied(g) {
+                        return Err(IllegalMoveError::Blocked { mv, square: mv.get_to() });
+                    }
+
+                    // we have a clear line to an unmoved rook
+                    // now we need to check whether the field the king and rook are
+                    // moving to are in the attack squares of any enemy piece
+                    if self.board.square_is_controlled_by(f, !self.turn)
+                        || self.board.square_is_controlled_by(g, !self.turn)
+                        || self.board.square_is_controlled_by(rook_sq, !self.turn)
+                    {
+                        return Err(IllegalMoveError::MoveInvalid { mv });
+                    }
+
+                    let (rook, col) = self.board.remove_piece_from_square(rook_sq).unwrap();
+                    self.board.place_piece_on_square(rook, col, f);
+                    Ok(())
+                }
+                Piece::Rook { has_moved } if *has_moved => Err(IllegalMoveError::MoveInvalid { mv }),
+                _ => Err(IllegalMoveError::DifferentPiece {
+                    expected: Piece::Rook { has_moved: false },
+                    found: *pc,
+                }),
+            }
+        } else {
+            Err(IllegalMoveError::EmptySquare { square: rook_sq })
+        }
+    }
+
+    fn long_castle(&mut self, from: Square, mv: Move) -> Result<(), IllegalMoveError> {
+        let rook_sq = Square::from_rank_file(from.get_rank(), File::A);
+        if let Some((pc, col)) = self.board.get_piece_on_square(rook_sq) {
+            if *col != self.turn {
+                return Err(IllegalMoveError::NotYourPiece {
+                    color: *col,
+                    square: rook_sq,
+                });
+            }
+            match pc {
+                Piece::Rook { has_moved } if !has_moved => {
+                    let b = Square::from_rank_file(from.get_rank(), File::B);
+                    let c = Square::from_rank_file(from.get_rank(), File::C);
+                    let d = Square::from_rank_file(from.get_rank(), File::D);
+
+                    if self.board.is_occupied(b) || self.board.is_occupied(c) || self.board.is_occupied(d) {
+                        return Err(IllegalMoveError::Blocked { mv, square: mv.get_to() });
+                    }
+
+                    // we have a clear line to an unmoved rook
+                    // now we need to check whether the field the king and rook are
+                    // moving to are in the attack squares of any enemy piece
+                    if self.board.square_is_controlled_by(b, !self.turn)
+                        || self.board.square_is_controlled_by(c, !self.turn)
+                        || self.board.square_is_controlled_by(d, !self.turn)
+                        || self.board.square_is_controlled_by(rook_sq, !self.turn)
+                    {
+                        return Err(IllegalMoveError::MoveInvalid { mv });
+                    }
+
+                    let (rook, col) = self.board.remove_piece_from_square(rook_sq).unwrap();
+                    self.board.place_piece_on_square(rook, col, d);
+                    Ok(())
+                }
+                Piece::Rook { has_moved } if *has_moved => Err(IllegalMoveError::MoveInvalid { mv }),
+                _ => Err(IllegalMoveError::DifferentPiece {
+                    expected: Piece::Rook { has_moved: false },
+                    found: *pc,
+                }),
+            }
+        } else {
+            Err(IllegalMoveError::EmptySquare { square: rook_sq })
+        }
+    }
 
     pub fn execute_move(&mut self, mut mv: Move) -> Result<(), IllegalMoveError> {
         let from = mv.get_from();
@@ -158,41 +245,10 @@ impl Game {
                         return Err(IllegalMoveError::MoveInvalid { mv });
                     } else if from.get_delta_file(to) == -3 {
                         // long castle
-                        let rook_sq = Square::from_rank_file(from.get_rank(), File::A);
-                        if let Some((pc, col)) = self.board.get_piece_on_square(rook_sq) {
-                            if *col != self.turn {
-                                return Err(IllegalMoveError::NotYourPiece {
-                                    color: *col,
-                                    square: rook_sq,
-                                });
-                            }
-                            match pc {
-                                Piece::Rook { has_moved } if !has_moved => {
-                                    if self.board.is_occupied(Square::from_rank_file(from.get_rank(), File::B))
-                                        || self.board.is_occupied(Square::from_rank_file(from.get_rank(), File::C))
-                                        || self.board.is_occupied(Square::from_rank_file(from.get_rank(), File::D))
-                                    {
-                                        return Err(IllegalMoveError::Blocked { mv, square: mv.get_to() });
-                                    }
-                                    // we have a clear line to an unmoved rook
-                                    // now we need to check whether the field the king and rook are
-                                    // moving to are in the attack squares of any enemy piece
-                                }
-                                Piece::Rook { has_moved } if *has_moved => return Err(IllegalMoveError::MoveInvalid { mv }),
-                                _ => {
-                                    return Err(IllegalMoveError::DifferentPiece {
-                                        expected: Piece::Rook { has_moved: false },
-                                        found: *pc,
-                                    });
-                                }
-                            }
-                        } else {
-                            return Err(IllegalMoveError::EmptySquare { square: rook_sq });
-                        }
-                        todo!("check whether clear line to rook")
+                        self.long_castle(from, mv)?;
                     } else if from.get_delta_file(to) == 2 {
                         // short castle
-                        todo!("check whether clear line to rook")
+                        self.short_castle(from, mv)?;
                     } else {
                         return Err(IllegalMoveError::MoveInvalid { mv });
                     }
