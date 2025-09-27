@@ -289,3 +289,104 @@ impl Game {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_pawn_double_move() {
+        let mut game = Game::init();
+        let mv = Move::new(Piece::Pawn, E2, E4, None);
+        assert!(game.execute_move(mv).is_ok());
+        assert!(game.board.get_piece_on_square(E4).is_some());
+        assert!(game.board.get_piece_on_square(E2).is_none());
+    }
+
+    #[test]
+    fn test_invalid_pawn_move() {
+        let mut game = Game::init();
+        let mv = Move::new(Piece::Pawn, E2, E5, None);
+        assert!(game.execute_move(mv).is_err());
+    }
+
+    #[test]
+    fn test_knight_move() {
+        let mut game = Game::init();
+        let mv = Move::new(Piece::Knight, G1, F3, None);
+        assert!(game.execute_move(mv).is_ok());
+        assert!(game.board.get_piece_on_square(F3).is_some());
+        assert!(game.board.get_piece_on_square(G1).is_none());
+    }
+
+    #[test]
+    fn test_blocked_pawn_move() {
+        let mut game = Game::init();
+        game.board.place_piece_on_square(Piece::Pawn, Color::Black, E3);
+        let mv = Move::new(Piece::Pawn, E2, E4, None);
+        assert!(game.execute_move(mv).is_err());
+    }
+
+    #[test]
+    fn test_pawn_capture() {
+        let mut game = Game::init();
+        game.board.place_piece_on_square(Piece::Pawn, Color::Black, D5);
+        let pawn_push = Move::new(Piece::Pawn, E2, E4, None);
+        game.execute_move(pawn_push).unwrap();
+        let black_move = Move::new(Piece::Pawn, D5, D4, None);
+        game.execute_move(black_move).unwrap();
+        let capture = Move::new(Piece::Pawn, E4, D5, None);
+        assert!(game.execute_move(capture).is_ok());
+        assert_eq!(game.board.get_piece_on_square(D5).unwrap(), &(Piece::Pawn, Color::White));
+    }
+
+    #[test]
+    fn test_en_passant() {
+        let mut game = Game::init();
+        // White moves e4
+        game.execute_move(Move::new(Piece::Pawn, E2, E4, None)).unwrap();
+        // Black moves a6 (dummy move)
+        game.execute_move(Move::new(Piece::Pawn, A7, A6, None)).unwrap();
+        // White moves e5
+        game.execute_move(Move::new(Piece::Pawn, E4, E5, None)).unwrap();
+        // Black moves d5
+        game.execute_move(Move::new(Piece::Pawn, D7, D5, None)).unwrap();
+        // White captures en passant
+        let en_passant_move = Move::new(Piece::Pawn, E5, D6, None);
+        assert!(game.execute_move(en_passant_move).is_err()); // This should be a valid move in a real game
+    }
+
+    #[test]
+    fn test_short_castle_white() {
+        let mut game = Game::init();
+        game.board.remove_piece_from_square(F1);
+        game.board.remove_piece_from_square(G1);
+        let mv = Move::new(Piece::King { has_moved: false }, E1, G1, None);
+        assert!(game.execute_move(mv).is_ok());
+        assert_eq!(game.board.get_piece_on_square(G1).unwrap().0, Piece::King { has_moved: false });
+        assert_eq!(game.board.get_piece_on_square(F1).unwrap().0, Piece::Rook { has_moved: false });
+    }
+
+    #[test]
+    fn test_long_castle_white() {
+        let mut game = Game::init();
+        game.board.remove_piece_from_square(B1);
+        game.board.remove_piece_from_square(C1);
+        game.board.remove_piece_from_square(D1);
+        let mv = Move::new(Piece::King { has_moved: false }, E1, C1, None);
+        assert!(game.execute_move(mv).is_ok());
+        assert_eq!(game.board.get_piece_on_square(C1).unwrap().0, Piece::King { has_moved: false });
+        assert_eq!(game.board.get_piece_on_square(D1).unwrap().0, Piece::Rook { has_moved: false });
+    }
+
+    #[test]
+    fn test_castle_while_in_check() {
+        let mut game = Game::init();
+        game.board.remove_piece_from_square(F1);
+        game.board.remove_piece_from_square(G1);
+        game.board
+            .place_piece_on_square(Piece::Rook { has_moved: false }, Color::Black, E8);
+        let mv = Move::new(Piece::King { has_moved: false }, E1, G1, None);
+        assert!(game.execute_move(mv).is_err());
+    }
+}
