@@ -81,9 +81,9 @@ impl AttackMagic {
 impl Occupancy {
     pub const fn hash(&self, mask: BoardMask, magic_number: u64, shift: u8) -> usize {
         // we mask off only the relevant squares (so f.e. for a rook that would be the horizontal and
-        // vertical line it is on), this is the first importaint step as it reduces complexity from
+        // vertical line it is on), this is the first important step as it reduces complexity from
         // 2^64 down to 2^n where n is the number of relevant squares which is way more manageble.
-        // We then try to create a as dense as possible bijection from the 2^n occupancy patterns
+        // We then try to create a as dense as possible linear bijection from the 2^n occupancy patterns
         // to an usize which can serve as an Index into an Attack Pattern Array.
         ((self.0 & mask.0).wrapping_mul(magic_number) >> shift) as usize
     }

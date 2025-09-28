@@ -45,6 +45,29 @@ impl Not for BoardMask {
         Self(!self.0)
     }
 }
+impl Into<Vec<Square>> for BoardMask {
+    fn into(self) -> Vec<Square> {
+        let mut v = Vec::with_capacity(self.0.count_ones() as usize);
+        for i in 0..64 {
+            if self.0 & (1_u64 << i) != 0 {
+                v.push(Square::new(i).unwrap());
+            }
+        }
+        v
+    }
+}
+
+impl Into<Vec<Square>> for &BoardMask {
+    fn into(self) -> Vec<Square> {
+        let mut v = Vec::with_capacity(self.0.count_ones() as usize);
+        for i in 0..64 {
+            if self.0 & (1_u64 << i) != 0 {
+                v.push(Square::new(i).unwrap());
+            }
+        }
+        v
+    }
+}
 
 impl BoardMask {
     pub fn add_square(&mut self, square: Square) {
@@ -60,12 +83,16 @@ impl BoardMask {
         Self(self.0 & !(1_u64 << square.as_u8()))
     }
     pub fn contains(&self, square: Square) -> bool {
-        self.0 & 1_u64 << square.as_u8() != 0
+        self.0 & (1_u64 << square.as_u8()) != 0
     }
     pub fn count_ones(&self) -> u32 {
         self.0.count_ones()
     }
     pub fn add_squares(&mut self, squares: impl IntoIterator<Item = Square>) {
         squares.into_iter().for_each(|sq| self.add_square(sq));
+    }
+
+    pub fn as_squares(&self) -> Vec<Square> {
+        self.into()
     }
 }
