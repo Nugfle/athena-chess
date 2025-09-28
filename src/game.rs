@@ -46,37 +46,41 @@ impl Game {
         }
     }
 
-    /// color should be either -1 for Black or 1 for White
-    fn pawn_move(&mut self, mv: Move, color: i8) -> Result<(), IllegalMoveError> {
+    fn pawn_move(&mut self, mv: &mut Move) -> Result<(), IllegalMoveError> {
         let from = mv.get_from();
         let to = mv.get_to();
+        let heading = if self.turn.is_white() { 1 } else { -1 };
 
-        // pawn can at most move 2 ranks and only in their forward direction
-        if from.get_delta_rank(to).abs() > 2 || from.get_delta_rank(to) < -color {
-            return Err(IllegalMoveError::MoveInvalid { mv });
+        // pawn can move at least 1, at most 2 ranks and only in their forward direction
+        if from.get_delta_rank(to).abs() > 2
+            || (from.get_delta_rank(to) <= 0 && self.turn.is_white())
+            || (from.get_delta_rank(to) >= 0 && self.turn.is_black())
+        {
+            return Err(IllegalMoveError::MoveInvalid { mv: *mv });
         }
         // handle double moves
-        if from.get_delta_rank(to) == 2 * color {
+        if from.get_delta_rank(to) == 2 * heading {
             // double moves may only happen in a straight line
             if from.get_delta_file(to) != 0 {
-                return Err(IllegalMoveError::MoveInvalid { mv });
+                return Err(IllegalMoveError::MoveInvalid { mv: *mv });
             }
-            if self.board.is_occupied(from.move_on_file(color).unwrap()) {
+            if self.board.is_occupied(from.move_on_file(heading).unwrap()) {
                 return Err(IllegalMoveError::Blocked {
-                    mv,
-                    square: from.move_on_file(color).unwrap(),
+                    mv: *mv,
+                    square: from.move_on_file(heading).unwrap(),
                 });
             }
             if self.board.is_occupied(to) {
-                return Err(IllegalMoveError::Blocked { mv, square: to });
+                return Err(IllegalMoveError::Blocked { mv: *mv, square: to });
             }
+            return Ok(());
         }
 
         // 1 forward moves
-        if from.get_delta_rank(to) == color {
+        if from.get_delta_rank(to) == heading {
             // pushing pawn 1 square
             if from.get_delta_file(to) == 0 && self.board.is_occupied(to) {
-                return Err(IllegalMoveError::MoveInvalid { mv });
+                return Err(IllegalMoveError::MoveInvalid { mv: *mv });
             }
 
             // takes to the right
@@ -92,8 +96,9 @@ impl Game {
                 }) {
                     info!("en-pasent");
                     self.board.remove_piece_from_square(self.moves.last().unwrap().get_to());
+                    mv.set_takes(Some(Piece::Pawn));
                 } else if self.board.get_piece_on_square(to).is_none() {
-                    return Err(IllegalMoveError::TakesEmptySquare { mv, square: to });
+                    return Err(IllegalMoveError::TakesEmptySquare { mv: *mv, square: to });
                 }
             }
             // takes to the left
@@ -106,8 +111,9 @@ impl Game {
                 }) {
                     info!("en-pasent");
                     self.board.remove_piece_from_square(self.moves.last().unwrap().get_to());
+                    mv.set_takes(Some(Piece::Pawn));
                 } else if self.board.get_piece_on_square(to).is_none() {
-                    return Err(IllegalMoveError::TakesEmptySquare { mv, square: to });
+                    return Err(IllegalMoveError::TakesEmptySquare { mv: *mv, square: to });
                 }
             }
         }
@@ -115,7 +121,7 @@ impl Game {
     }
     fn short_castle(&mut self, from: Square, mv: Move) -> Result<(), IllegalMoveError> {
         let rook_sq = Square::from_rank_file(from.get_rank(), File::H);
-        if let Some((pc, col)) = self.board.get_piece_on_square(rook_sq) {
+        if let Some((pc, col)) = self.board.get_piece_on_square_mut(rook_sq) {
             if *col != self.turn {
                 return Err(IllegalMoveError::NotYourPiece {
                     color: *col,
@@ -123,25 +129,29 @@ impl Game {
                 });
             }
             match pc {
-                Piece::Rook { has_moved } if !has_moved => {
+                Piece::Rook { has_moved } if !*has_moved => {
                     let f = Square::from_rank_file(from.get_rank(), File::F);
                     let g = Square::from_rank_file(from.get_rank(), File::G);
+                    let e = Square::from_rank_file(from.get_rank(), File::E);
+
+                    if self.board.square_is_controlled_by(e, !self.turn) {
+                        return Err(IllegalMoveError::IsInCheck);
+                    }
 
                     if self.board.is_occupied(f) || self.board.is_occupied(g) {
                         return Err(IllegalMoveError::Blocked { mv, square: mv.get_to() });
                     }
 
                     // we have a clear line to an unmoved rook
-                    // now we need to check whether the field the king and rook are
-                    // moving to are in the attack squares of any enemy piece
-                    if self.board.square_is_controlled_by(f, !self.turn)
-                        || self.board.square_is_controlled_by(g, !self.turn)
-                        || self.board.square_is_controlled_by(rook_sq, !self.turn)
-                    {
+                    // now we need to check whether the fields the king is moving through are under
+                    // attack by an enemy piece
+                    if self.board.square_is_controlled_by(f, !self.turn) || self.board.square_is_controlled_by(g, !self.turn) {
                         return Err(IllegalMoveError::MoveInvalid { mv });
                     }
 
-                    let (rook, col) = self.board.remove_piece_from_square(rook_sq).unwrap();
+                    let (mut rook, col) = self.board.remove_piece_from_square(rook_sq).unwrap();
+                    rook.make_moved();
+
                     self.board.place_piece_on_square(rook, col, f);
                     Ok(())
                 }
@@ -170,19 +180,20 @@ impl Game {
                     let b = Square::from_rank_file(from.get_rank(), File::B);
                     let c = Square::from_rank_file(from.get_rank(), File::C);
                     let d = Square::from_rank_file(from.get_rank(), File::D);
+                    let e = Square::from_rank_file(from.get_rank(), File::E);
 
                     if self.board.is_occupied(b) || self.board.is_occupied(c) || self.board.is_occupied(d) {
                         return Err(IllegalMoveError::Blocked { mv, square: mv.get_to() });
                     }
 
+                    if self.board.square_is_controlled_by(e, !self.turn) {
+                        return Err(IllegalMoveError::IsInCheck);
+                    }
+
                     // we have a clear line to an unmoved rook
-                    // now we need to check whether the field the king and rook are
-                    // moving to are in the attack squares of any enemy piece
-                    if self.board.square_is_controlled_by(b, !self.turn)
-                        || self.board.square_is_controlled_by(c, !self.turn)
-                        || self.board.square_is_controlled_by(d, !self.turn)
-                        || self.board.square_is_controlled_by(rook_sq, !self.turn)
-                    {
+                    // now we need to check whether the fields the king is moving accross are not
+                    // under attack
+                    if self.board.square_is_controlled_by(c, !self.turn) || self.board.square_is_controlled_by(d, !self.turn) {
                         return Err(IllegalMoveError::MoveInvalid { mv });
                     }
 
@@ -233,12 +244,19 @@ impl Game {
         // check whether the move is valid for the type of piece
         match mv.get_piece() {
             Piece::Pawn => {
-                self.pawn_move(mv, if self.turn == Color::White { 1 } else { -1 })?;
+                self.pawn_move(&mut mv)?;
             }
 
             Piece::King { has_moved } => {
+                if from.get_delta_rank(to).abs() > 1 {
+                    return Err(IllegalMoveError::MoveInvalid { mv });
+                }
+                // we can at most move 2 squares
+                if from.get_delta_file(to).abs() > 2 {
+                    return Err(IllegalMoveError::MoveInvalid { mv });
+                }
                 // handles castling
-                if from.get_delta_file(to).abs() > 1 {
+                if from.get_delta_file(to).abs() == 2 {
                     // if we castle we can only move on the same rank and the king must not have
                     // moved
                     if has_moved || from.get_delta_rank(to) != 0 {
@@ -280,12 +298,14 @@ impl Game {
             }
         }
 
-        let (temp_p, temp_c) = self.board.remove_piece_from_square(from).expect("checked that from is Some");
+        let (mut temp_p, temp_c) = self.board.remove_piece_from_square(from).expect("checked that from is Some");
+        temp_p.make_moved();
 
         let takes = self.board.place_piece_on_square(temp_p, temp_c, to).map(|(taken, _)| taken);
 
         mv.set_takes(takes);
         self.moves.push(mv);
+        self.turn = !self.turn;
         Ok(())
     }
 }
@@ -330,10 +350,9 @@ mod test {
     #[test]
     fn test_pawn_capture() {
         let mut game = Game::init();
-        game.board.place_piece_on_square(Piece::Pawn, Color::Black, D5);
         let pawn_push = Move::new(Piece::Pawn, E2, E4, None);
         game.execute_move(pawn_push).unwrap();
-        let black_move = Move::new(Piece::Pawn, D5, D4, None);
+        let black_move = Move::new(Piece::Pawn, D7, D5, None);
         game.execute_move(black_move).unwrap();
         let capture = Move::new(Piece::Pawn, E4, D5, None);
         assert!(game.execute_move(capture).is_ok());
@@ -341,7 +360,7 @@ mod test {
     }
 
     #[test]
-    fn test_en_passant() {
+    fn test_en_passant_left() {
         let mut game = Game::init();
         // White moves e4
         game.execute_move(Move::new(Piece::Pawn, E2, E4, None)).unwrap();
@@ -353,7 +372,22 @@ mod test {
         game.execute_move(Move::new(Piece::Pawn, D7, D5, None)).unwrap();
         // White captures en passant
         let en_passant_move = Move::new(Piece::Pawn, E5, D6, None);
-        assert!(game.execute_move(en_passant_move).is_err()); // This should be a valid move in a real game
+        assert!(game.execute_move(en_passant_move).is_ok()); // This should be a valid move in a real game
+    }
+    #[test]
+    fn test_en_passant_right() {
+        let mut game = Game::init();
+        // White moves e4
+        game.execute_move(Move::new(Piece::Pawn, E2, E4, None)).unwrap();
+        // Black moves a6 (dummy move)
+        game.execute_move(Move::new(Piece::Pawn, A7, A6, None)).unwrap();
+        // White moves e5
+        game.execute_move(Move::new(Piece::Pawn, E4, E5, None)).unwrap();
+        // Black moves d5
+        game.execute_move(Move::new(Piece::Pawn, F7, F5, None)).unwrap();
+        // White captures en passant
+        let en_passant_move = Move::new(Piece::Pawn, E5, F6, None);
+        assert!(game.execute_move(en_passant_move).is_ok()); // This should be a valid move in a real game
     }
 
     #[test]
@@ -363,8 +397,8 @@ mod test {
         game.board.remove_piece_from_square(G1);
         let mv = Move::new(Piece::King { has_moved: false }, E1, G1, None);
         assert!(game.execute_move(mv).is_ok());
-        assert_eq!(game.board.get_piece_on_square(G1).unwrap().0, Piece::King { has_moved: false });
-        assert_eq!(game.board.get_piece_on_square(F1).unwrap().0, Piece::Rook { has_moved: false });
+        assert_eq!(game.board.get_piece_on_square(G1).unwrap().0, Piece::King { has_moved: true });
+        assert_eq!(game.board.get_piece_on_square(F1).unwrap().0, Piece::Rook { has_moved: true });
     }
 
     #[test]
@@ -375,8 +409,8 @@ mod test {
         game.board.remove_piece_from_square(D1);
         let mv = Move::new(Piece::King { has_moved: false }, E1, C1, None);
         assert!(game.execute_move(mv).is_ok());
-        assert_eq!(game.board.get_piece_on_square(C1).unwrap().0, Piece::King { has_moved: false });
-        assert_eq!(game.board.get_piece_on_square(D1).unwrap().0, Piece::Rook { has_moved: false });
+        assert_eq!(game.board.get_piece_on_square(C1).unwrap().0, Piece::King { has_moved: true });
+        assert_eq!(game.board.get_piece_on_square(D1).unwrap().0, Piece::Rook { has_moved: true });
     }
 
     #[test]
@@ -384,9 +418,10 @@ mod test {
         let mut game = Game::init();
         game.board.remove_piece_from_square(F1);
         game.board.remove_piece_from_square(G1);
+        game.board.remove_piece_from_square(E2);
         game.board
             .place_piece_on_square(Piece::Rook { has_moved: false }, Color::Black, E8);
         let mv = Move::new(Piece::King { has_moved: false }, E1, G1, None);
-        assert!(game.execute_move(mv).is_err());
+        assert_eq!(game.execute_move(mv), Err(IllegalMoveError::IsInCheck));
     }
 }

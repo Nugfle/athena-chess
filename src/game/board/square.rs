@@ -100,7 +100,7 @@ pub struct Square(u8);
 impl TryFrom<usize> for Square {
     type Error = ChessError;
     fn try_from(value: usize) -> Result<Self, Self::Error> {
-        if 0 < value && value < 64 {
+        if value < 64 {
             Ok(Square(value as u8))
         } else {
             Err(ChessError::InvalidSquare { square: value as u8 })
@@ -225,23 +225,25 @@ impl Square {
         Ok(n)
     }
 
-    /// moves the square by delta on the current file
+    /// returns the delta rank to get to self from other
     ///```
     /// use athena_chess::game::*;
     /// assert_eq!(E4.get_delta_rank(E8), 4);
     /// assert_eq!(C8.get_delta_rank(C6), -2);
     /// assert_eq!(A3.get_delta_rank(G5), 2);
+    /// assert_eq!(A3.get_delta_rank(G3), 0);
     ///´´´
     pub fn get_delta_rank(&self, other: Self) -> i8 {
         other.get_rank() as i8 - self.get_rank() as i8
     }
 
-    /// moves the square by delta on the current file
+    /// returns the delta file to get to self from other
     ///```
     /// use athena_chess::game::*;
     /// assert_eq!(A4.get_delta_file(E4), 4);
     /// assert_eq!(F8.get_delta_file(C8), -3);
     /// assert_eq!(A3.get_delta_file(G5), 6);
+    /// assert_eq!(A3.get_delta_file(A5), 0);
     ///´´´
     pub fn get_delta_file(&self, other: Self) -> i8 {
         other.get_file() as i8 - self.get_file() as i8

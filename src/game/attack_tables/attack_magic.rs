@@ -1,6 +1,5 @@
 use log::info;
 use rand::{self, random};
-use std::usize;
 
 use super::move_logic::*;
 use crate::game::BoardMask;
@@ -141,6 +140,6 @@ mod test {
     fn test_find_valid_magic_num() {
         let mask = create_rook_mask(E1);
         let o = occupancies_from_mask(mask);
-        let num = find_valid_magic_number(mask, 2_usize.pow(mask.0.count_ones() + H), &o);
+        find_valid_magic_number(mask, 2_usize.pow(mask.0.count_ones() + H), &o);
     }
 }

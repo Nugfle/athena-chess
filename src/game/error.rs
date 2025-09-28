@@ -13,7 +13,7 @@ pub enum ChessError {
     IllegalMove { e: IllegalMoveError },
 }
 
-#[derive(Debug, Clone, Copy, Error)]
+#[derive(Debug, Clone, Copy, Error, PartialEq, Eq)]
 pub enum IllegalMoveError {
     #[error("Empty Square: {square}.")]
     EmptySquare { square: Square },

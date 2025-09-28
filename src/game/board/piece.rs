@@ -29,39 +29,29 @@ impl Display for Piece {
 
 impl Piece {
     pub fn is_pawn(&self) -> bool {
-        match self {
-            Self::Pawn => true,
-            _ => false,
-        }
+        *self == Self::Pawn
     }
     pub fn is_knight(&self) -> bool {
-        match self {
-            Self::Knight => true,
-            _ => false,
-        }
+        *self == Self::Knight
     }
     pub fn is_bishop(&self) -> bool {
-        match self {
-            Self::Bishop => true,
-            _ => false,
-        }
+        *self == Self::Bishop
     }
     pub fn is_rook(&self) -> bool {
-        match self {
-            Self::Rook { .. } => true,
-            _ => false,
-        }
+        matches!(self, Self::Rook { .. })
     }
     pub fn is_queen(&self) -> bool {
-        match self {
-            Self::Queen => true,
-            _ => false,
-        }
+        *self == Self::Queen
     }
     pub fn is_king(&self) -> bool {
+        matches!(self, Self::King { .. })
+    }
+
+    pub fn make_moved(&mut self) {
         match self {
-            Self::King { .. } => true,
-            _ => false,
+            Self::King { has_moved } => *has_moved = true,
+            Self::Rook { has_moved } => *has_moved = true,
+            _ => (),
         }
     }
 }
@@ -70,6 +60,15 @@ impl Piece {
 pub enum Color {
     White,
     Black,
+}
+
+impl Color {
+    pub fn is_white(&self) -> bool {
+        *self == Color::White
+    }
+    pub fn is_black(&self) -> bool {
+        *self == Color::Black
+    }
 }
 
 impl Display for Color {

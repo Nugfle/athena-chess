@@ -3,7 +3,7 @@ use std::fmt::Display;
 use super::board::piece::Piece;
 use super::board::square::Square;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Move {
     piece: Piece,
     from: Square,
@@ -23,8 +23,12 @@ impl Move {
     pub fn get_piece(&self) -> Piece {
         self.piece
     }
+    /// sets takes to piece if piece is some or takes is none
     pub fn set_takes(&mut self, piece: Option<Piece>) {
-        self.takes = piece
+        if self.takes.is_some() && piece.is_none() {
+            return;
+        }
+        self.takes = piece;
     }
 }
 

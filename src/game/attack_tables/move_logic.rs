@@ -54,7 +54,7 @@ pub fn create_rook_mask(square: Square) -> BoardMask {
         i += 1;
     }
     i = square.as_u8();
-    while i % 8 > 0 {
+    while !i.is_multiple_of(8) {
         mask.add_square(Square::new(i).unwrap());
         i -= 1;
     }
@@ -136,7 +136,7 @@ pub fn create_bishop_mask(square: Square) -> BoardMask {
     }
     i = square.as_u8();
     // goes into -- direction until it hits the edge of the board
-    while i % 8 > 0 && i / 8 > 0 {
+    while !i.is_multiple_of(8) && i / 8 > 0 {
         mask.add_square(Square::new(i).unwrap());
         i -= 9;
     }
@@ -148,7 +148,7 @@ pub fn create_bishop_mask(square: Square) -> BoardMask {
     }
     i = square.as_u8();
     // goes into +- direction until it hits the edge of the board
-    while i % 8 > 0 && i / 8 < 7 {
+    while !i.is_multiple_of(8) && i / 8 < 7 {
         mask.add_square(Square::new(i).unwrap());
         i += 7;
     }

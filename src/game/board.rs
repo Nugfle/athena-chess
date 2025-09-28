@@ -13,19 +13,24 @@ use crate::game::ATTACK_TABLES;
 pub struct Occupancy(pub u64);
 
 impl Occupancy {
+    /// marks the given square as occupied
     pub fn add_square(&mut self, square: Square) {
         self.0 |= 1_u64 << square.as_u8();
     }
+    /// returns occupancy with the given square marked as occupied
     pub fn with_square(&self, square: Square) -> Self {
         Occupancy(self.0 | 1_u64 << square.as_u8())
     }
+    /// marks the given square as free
     pub fn remove_square(&mut self, square: Square) {
         self.0 &= !(1_u64 << square.as_u8());
     }
     #[allow(unused)]
+    /// returns occupancy with the given square marked as free
     pub fn with_square_removed(&self, square: Square) -> Self {
         Occupancy(self.0 & !(1_u64 << square.as_u8()))
     }
+    /// checks whether the given square has a piece on it
     pub fn is_occupied(&self, square: Square) -> bool {
         self.0 & 1_u64 << square.as_u8() != 0
     }
@@ -64,21 +69,15 @@ impl BitBoard {
         let knight_pattern = ATTACK_TABLES.get_attack_pattern_knight(square);
         let bishop_pattern = ATTACK_TABLES.get_attack_pattern_bishop(square, self.occupancy);
         // checks for major pieces
-        if self
-            .board
-            .iter()
-            .enumerate()
-            .find(|(i, p)| {
-                p.is_some_and(|(piece, col)| {
-                    let s = Square::try_from(*i).unwrap();
-                    col == color
-                        && ((rook_pattern.contains(s) && (piece.is_rook() || piece.is_queen()))
-                            || (bishop_pattern.contains(s) && piece.is_bishop() || piece.is_queen())
-                            || (knight_pattern.contains(s) && piece.is_knight()))
-                })
+        if self.board.iter().enumerate().any(|(i, p)| {
+            p.is_some_and(|(piece, col)| {
+                let s = Square::try_from(i).unwrap();
+                col == color
+                    && ((rook_pattern.contains(s) && (piece.is_rook() || piece.is_queen()))
+                        || (bishop_pattern.contains(s) && piece.is_bishop() || piece.is_queen())
+                        || (knight_pattern.contains(s) && piece.is_knight()))
             })
-            .is_some()
-        {
+        }) {
             return true;
         }
         // checks for king
@@ -174,7 +173,54 @@ impl BitBoard {
         self.board[square.as_index()].as_ref()
     }
 
+    pub fn get_piece_on_square_mut(&mut self, square: Square) -> Option<&mut (Piece, Color)> {
+        self.board[square.as_index()].as_mut()
+    }
+
     pub fn is_occupied(&self, square: Square) -> bool {
         self.occupancy.is_occupied(square)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_place_piece_on_square() {
+        // setup empty board
+        let mut bb = BitBoard::default();
+        let sq = Square::from_rank_file(Rank::Four, File::E);
+        let pc = Piece::Rook { has_moved: true };
+        let col = Color::White;
+        assert!(bb.place_piece_on_square(pc, col, sq).is_none());
+        assert_eq!(bb.board[28], Some((pc, col)));
+        assert!(bb.occupancy.is_occupied(sq));
+    }
+    #[test]
+    fn test_remove_piece_from_square() {
+        // setup empty board
+        let mut bb = BitBoard::default();
+        let sq = Square::from_rank_file(Rank::Four, File::E);
+        let pc = Piece::Rook { has_moved: true };
+        let col = Color::White;
+        bb.board[28] = Some((pc, col));
+        bb.occupancy.add_square(Square::new(28).unwrap());
+        assert_eq!(Some((pc, col)), bb.remove_piece_from_square(sq));
+        assert!(bb.board[28].is_none());
+        assert!(!bb.occupancy.is_occupied(sq));
+    }
+    #[test]
+    fn test_get_piece_from_square() {
+        // setup empty board
+        let mut bb = BitBoard::default();
+        let sq = Square::from_rank_file(Rank::Four, File::E);
+        let pc = Piece::Rook { has_moved: true };
+        let col = Color::White;
+        bb.board[28] = Some((pc, col));
+        bb.occupancy.add_square(Square::new(28).unwrap());
+        assert_eq!(Some(&(pc, col)), bb.get_piece_on_square(sq));
+        assert!(bb.board[28].is_some());
+        assert!(bb.occupancy.is_occupied(sq));
     }
 }
