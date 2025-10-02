@@ -1,6 +1,6 @@
 use attack_tables::AttackTables;
 use board::BitBoard;
-use log::info;
+use log::{error, info};
 pub use mask::BoardMask;
 use std::sync::LazyLock;
 
@@ -12,7 +12,6 @@ mod attack_tables;
 mod board;
 mod chess_move;
 mod error;
-mod evaluation;
 mod mask;
 
 static ATTACK_TABLES: LazyLock<AttackTables> = LazyLock::new(|| {
@@ -49,7 +48,7 @@ impl Game {
         let from = mv.get_from();
         let to = mv.get_to();
 
-        let (mut temp_p, temp_c) = self.board.remove_piece_from_square(from).expect("checked that from is Some");
+        let (mut temp_p, temp_c) = self.board.remove_piece_from_square(from).expect("from must be some");
         temp_p.make_moved();
         let takes = self.board.place_piece_on_square(temp_p, temp_c, to).map(|(taken, _)| taken);
         mv.set_takes(takes);
@@ -58,7 +57,7 @@ impl Game {
         self.turn = !self.turn;
     }
 
-    pub fn get_available_moves(&self) -> Vec<Move> {
+    pub(crate) fn get_available_moves(&self) -> Vec<Move> {
         let pieces: Vec<(Square, Piece)> = self
             .board
             .board
@@ -77,24 +76,24 @@ impl Game {
 
         pieces
             .iter()
-            .map(|(sq, pc)| {
-                let board_mask = match pc {
-                    Piece::Rook { .. } => ATTACK_TABLES.get_attack_pattern_rook(*sq, self.board.occupancy),
-                    Piece::Pawn => todo!(""),
-                    Piece::King { .. } => todo!(""),
-                    Piece::Knight => ATTACK_TABLES.get_attack_pattern_knight(*sq),
-                    Piece::Queen => ATTACK_TABLES.get_attack_pattern_queen(*sq, self.board.occupancy),
-                    Piece::Bishop => ATTACK_TABLES.get_attack_pattern_bishop(*sq, self.board.occupancy),
-                };
-                self.moves_from_mask_and_starting_square(&board_mask, *sq)
+            .map(|(sq, pc)| match pc {
+                Piece::Rook { .. } => {
+                    self.moves_from_mask_and_starting_square(&ATTACK_TABLES.get_attack_pattern_rook(*sq, self.board.occupancy), *sq)
+                }
+                Piece::Pawn => self.get_pawn_moves(*sq),
+                Piece::King { .. } => todo!(""),
+                Piece::Knight => self.moves_from_mask_and_starting_square(&ATTACK_TABLES.get_attack_pattern_knight(*sq), *sq),
+                Piece::Queen => self.moves_from_mask_and_starting_square(&ATTACK_TABLES.get_attack_pattern_queen(*sq, self.board.occupancy), *sq),
+                Piece::Bishop => self.moves_from_mask_and_starting_square(&ATTACK_TABLES.get_attack_pattern_bishop(*sq, self.board.occupancy), *sq),
             })
             .flatten()
             .collect()
     }
 
-    pub fn previous_move(&self) -> Option<&Move> {
+    pub(crate) fn previous_move(&self) -> Option<&Move> {
         self.moves.last()
     }
+
     fn moves_from_mask_and_starting_square(&self, board_mask: &BoardMask, starting_square: Square) -> Vec<Move> {
         board_mask
             .as_squares()
@@ -120,5 +119,99 @@ impl Game {
                 )),
             })
             .collect()
+    }
+
+    fn get_king_moves(&self, from: Square) -> Vec<Move> {
+        let (piece, color) = self.board.get_piece_on_square(from).expect("from must contain a piece");
+        assert_eq!(*piece, Piece::Pawn, "the piece must be a pawn");
+        let mut available_moves = Vec::new();
+        todo!("implement king moves");
+        available_moves
+    }
+
+    fn get_pawn_moves(&self, from: Square) -> Vec<Move> {
+        let (piece, color) = self.board.get_piece_on_square(from).expect("from must contain a piece");
+        assert_eq!(*piece, Piece::Pawn, "the piece must be a pawn");
+        let heading = if color.is_white() { 1 } else { -1 };
+        let mut available_moves = Vec::new();
+
+        if let Ok(forward) = from.move_on_rank(heading) {
+            if self.board.get_piece_on_square(forward).is_none() {
+                if forward.get_rank().is_on_edge() {
+                    available_moves.copy_from_slice(&Move::promotions(from, forward, None));
+                } else {
+                    available_moves.push(Move::new(Piece::Pawn, from, forward, None));
+                }
+                if (from.get_rank() == Rank::Two && *color == Color::White) || (from.get_rank() == Rank::Seven && *color == Color::Black) {
+                    if self
+                        .board
+                        .get_piece_on_square(forward.move_on_rank(heading).expect("we checked"))
+                        .is_none()
+                    {
+                        available_moves.push(Move::new(
+                            Piece::Pawn,
+                            from,
+                            forward.move_on_rank(heading).expect("we checked"),
+                            None,
+                        ));
+                    }
+                }
+            }
+            if let Ok(forward_pos) = forward.move_on_file(1) {
+                match self.board.get_piece_on_square(forward_pos) {
+                    None => {
+                        if forward.get_rank().is_on_edge() {
+                            available_moves.copy_from_slice(&Move::promotions(from, forward_pos, None));
+                        } else {
+                            available_moves.push(Move::new(Piece::Pawn, from, forward_pos, None));
+                        }
+                    }
+                    Some((pc, col)) if col != color => {
+                        if forward.get_rank().is_on_edge() {
+                            available_moves.copy_from_slice(&Move::promotions(from, forward_pos, Some(*pc)));
+                        } else {
+                            available_moves.push(Move::new(Piece::Pawn, from, forward_pos, Some(*pc)));
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            if let Ok(forward_neg) = forward.move_on_file(-1) {
+                match self.board.get_piece_on_square(forward_neg) {
+                    None => {
+                        if forward.get_rank().is_on_edge() {
+                            available_moves.copy_from_slice(&Move::promotions(from, forward_neg, None));
+                        } else {
+                            available_moves.push(Move::new(Piece::Pawn, from, forward_neg, None));
+                        }
+                    }
+                    Some((pc, col)) if col != color => {
+                        if forward.get_rank().is_on_edge() {
+                            available_moves.copy_from_slice(&Move::promotions(from, forward_neg, Some(*pc)));
+                        } else {
+                            available_moves.push(Move::new(Piece::Pawn, from, forward_neg, Some(*pc)));
+                        }
+                    }
+                    _ => {}
+                }
+            }
+
+            // en pasente
+            if self.previous_move().is_some_and(|m| {
+                m.get_piece().is_pawn()
+                    && m.get_from().get_delta_rank(m.get_to()).abs() == 2
+                    && m.get_to().get_delta_rank(from) == 0
+                    && m.get_to().get_delta_file(from).abs() == 1
+            }) {
+                match self.previous_move().expect("checked").get_to().get_delta_file(from) {
+                    1 => available_moves.push(Move::en_pesante(from, forward.move_on_file(1).expect("checked"))),
+                    -1 => available_moves.push(Move::en_pesante(from, forward.move_on_file(-1).expect("checked"))),
+                    _ => {}
+                }
+            }
+        } else {
+            error!("error Pawn on the backrank: {}", from);
+        }
+        available_moves
     }
 }

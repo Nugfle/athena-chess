@@ -93,6 +93,24 @@ pub enum Rank {
     Eight = 7,
 }
 
+impl Rank {
+    pub fn is_on_edge(&self) -> bool {
+        match self {
+            Self::One | Self::Eight => true,
+            _ => false,
+        }
+    }
+}
+
+impl File {
+    pub fn is_on_edge(&self) -> bool {
+        match self {
+            Self::A | Self::H => true,
+            _ => false,
+        }
+    }
+}
+
 /// represents a square on a chess board. Can be in Range from 0 to 63
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, PartialOrd, Ord)]
 pub struct Square(u8);
