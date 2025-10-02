@@ -130,7 +130,7 @@ impl Square {
     /// use of this function is highly discouraged, as it can easily lead to errors. Please use the
     /// from_rank_file method instead.
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(Square::new(9).unwrap(), B2);
     ///```
     pub fn new(s: u8) -> Result<Self, ChessError> {
@@ -142,7 +142,7 @@ impl Square {
     }
 
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(Square::from_rank_file(Rank::Four, File::A), A4);
     ///```
     pub const fn from_rank_file(rank: Rank, file: File) -> Self {
@@ -150,7 +150,7 @@ impl Square {
     }
 
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(A1.as_index(), 0);
     /// assert_eq!(B2.as_index(), 9);
     /// assert_eq!(H8.as_index(), 63);
@@ -160,7 +160,7 @@ impl Square {
     }
 
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(A1.as_u8(), 0);
     /// assert_eq!(B2.as_u8(), 9);
     /// assert_eq!(H8.as_u8(), 63);
@@ -170,7 +170,7 @@ impl Square {
     }
 
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(E4.get_rank(), Rank::Four);
     /// assert_eq!(A1.get_rank(), Rank::One);
     ///```
@@ -189,7 +189,7 @@ impl Square {
     }
 
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(E4.get_file(), File::E);
     /// assert_eq!(A1.get_file(), File::A);
     ///```
@@ -209,7 +209,7 @@ impl Square {
 
     /// moves the square by delta on the current rank
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(E4.move_on_rank(-2).unwrap(), C4);
     /// assert_eq!(A1.move_on_rank(1).unwrap(), B1);
     ///```
@@ -227,7 +227,7 @@ impl Square {
 
     /// moves the square by delta on the current file
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(E4.move_on_file(-2).unwrap(), E2);
     /// assert_eq!(A1.move_on_file(1).unwrap(), A2);
     ///´´´
@@ -245,7 +245,7 @@ impl Square {
 
     /// returns the delta rank to get to self from other
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(E4.get_delta_rank(E8), 4);
     /// assert_eq!(C8.get_delta_rank(C6), -2);
     /// assert_eq!(A3.get_delta_rank(G5), 2);
@@ -257,7 +257,7 @@ impl Square {
 
     /// returns the delta file to get to self from other
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(A4.get_delta_file(E4), 4);
     /// assert_eq!(F8.get_delta_file(C8), -3);
     /// assert_eq!(A3.get_delta_file(G5), 6);

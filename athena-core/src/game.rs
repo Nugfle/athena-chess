@@ -14,6 +14,9 @@ mod chess_move;
 mod error;
 mod mask;
 
+//#[cfg(test)]
+//mod tests;
+
 static ATTACK_TABLES: LazyLock<AttackTables> = LazyLock::new(|| {
     let start = std::time::Instant::now();
     let at = AttackTables::create_tables();
@@ -44,14 +47,62 @@ impl Game {
         }
     }
 
-    pub fn execute_move(&mut self, mut mv: Move) {
-        let from = mv.get_from();
-        let to = mv.get_to();
-
-        let (mut temp_p, temp_c) = self.board.remove_piece_from_square(from).expect("from must be some");
-        temp_p.make_moved();
-        let takes = self.board.place_piece_on_square(temp_p, temp_c, to).map(|(taken, _)| taken);
-        mv.set_takes(takes);
+    pub fn execute_move(&mut self, mv: Move) {
+        match mv {
+            Move::Normal { piece: _, from, to } => {
+                let (mut piece, color) = self.board.remove_piece_from_square(from).expect("from square must contain a piece");
+                piece.make_moved();
+                self.board.place_piece_on_square(piece, color, to);
+            }
+            Move::Capture { piece: _, from, to, captured: _ } => {
+                let (mut piece, color) = self.board.remove_piece_from_square(from).expect("from square must contain a piece");
+                piece.make_moved();
+                self.board.place_piece_on_square(piece, color, to);
+            }
+            Move::EnPassant { from, to } => {
+                let (piece, color) = self.board.remove_piece_from_square(from).expect("from square must contain a pawn");
+                assert!(self.board.get_piece_on_square(to).is_none(), "to square must be empty");
+                self.board.place_piece_on_square(piece, color, to);
+                
+                // Remove the captured pawn from the square beside the destination
+                let captured_pawn_square = Square::from_rank_file(from.get_rank(), to.get_file());
+                self.board.remove_piece_from_square(captured_pawn_square).expect("captured pawn must exist");
+            }
+            Move::Promotion { from, to, promoted_to } => {
+                let (_, color) = self.board.remove_piece_from_square(from).expect("from square must contain a pawn");
+                let mut promoted_piece = promoted_to;
+                promoted_piece.make_moved();
+                self.board.place_piece_on_square(promoted_piece, color, to);
+            }
+            Move::PromotionCapture { from, to, captured: _, promoted_to } => {
+                let (_, color) = self.board.remove_piece_from_square(from).expect("from square must contain a pawn");
+                let mut promoted_piece = promoted_to;
+                promoted_piece.make_moved();
+                self.board.place_piece_on_square(promoted_piece, color, to);
+            }
+            Move::CastleKingside { king_from, king_to, rook_from, rook_to } => {
+                // Move the king
+                let (mut king, color) = self.board.remove_piece_from_square(king_from).expect("king must be on king_from square");
+                king.make_moved();
+                self.board.place_piece_on_square(king, color, king_to);
+                
+                // Move the rook
+                let (mut rook, _) = self.board.remove_piece_from_square(rook_from).expect("rook must be on rook_from square");
+                rook.make_moved();
+                self.board.place_piece_on_square(rook, color, rook_to);
+            }
+            Move::CastleQueenside { king_from, king_to, rook_from, rook_to } => {
+                // Move the king
+                let (mut king, color) = self.board.remove_piece_from_square(king_from).expect("king must be on king_from square");
+                king.make_moved();
+                self.board.place_piece_on_square(king, color, king_to);
+                
+                // Move the rook
+                let (mut rook, _) = self.board.remove_piece_from_square(rook_from).expect("rook must be on rook_from square");
+                rook.make_moved();
+                self.board.place_piece_on_square(rook, color, rook_to);
+            }
+        }
 
         self.moves.push(mv);
         self.turn = !self.turn;
@@ -81,7 +132,7 @@ impl Game {
                     self.moves_from_mask_and_starting_square(&ATTACK_TABLES.get_attack_pattern_rook(*sq, self.board.occupancy), *sq)
                 }
                 Piece::Pawn => self.get_pawn_moves(*sq),
-                Piece::King { .. } => todo!(""),
+                Piece::King { .. } => self.get_king_moves(*sq),
                 Piece::Knight => self.moves_from_mask_and_starting_square(&ATTACK_TABLES.get_attack_pattern_knight(*sq), *sq),
                 Piece::Queen => self.moves_from_mask_and_starting_square(&ATTACK_TABLES.get_attack_pattern_queen(*sq, self.board.occupancy), *sq),
                 Piece::Bishop => self.moves_from_mask_and_starting_square(&ATTACK_TABLES.get_attack_pattern_bishop(*sq, self.board.occupancy), *sq),
@@ -123,7 +174,7 @@ impl Game {
 
     fn get_king_moves(&self, from: Square) -> Vec<Move> {
         let (piece, color) = self.board.get_piece_on_square(from).expect("from must contain a piece");
-        assert_eq!(*piece, Piece::Pawn, "the piece must be a pawn");
+        assert!(piece.is_king(), "the piece must be a king");
         let mut available_moves = Vec::new();
         todo!("implement king moves");
         available_moves
@@ -131,7 +182,7 @@ impl Game {
 
     fn get_pawn_moves(&self, from: Square) -> Vec<Move> {
         let (piece, color) = self.board.get_piece_on_square(from).expect("from must contain a piece");
-        assert_eq!(*piece, Piece::Pawn, "the piece must be a pawn");
+        assert!(piece.is_pawn(), "the piece must be a pawn");
         let heading = if color.is_white() { 1 } else { -1 };
         let mut available_moves = Vec::new();
 

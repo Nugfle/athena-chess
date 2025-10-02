@@ -26,3 +26,4 @@ debug = true
 
 [features]
 benchmark = []
+magic_test = []
