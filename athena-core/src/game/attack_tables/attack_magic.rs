@@ -1,5 +1,6 @@
 use log::info;
 use rand::{self, random};
+use serde::{Deserialize, Serialize};
 
 use super::move_logic::*;
 use crate::game::BoardMask;
@@ -10,7 +11,7 @@ use crate::game::board::square::Square;
 /// populated arrays but faster times for finding magic numbers
 pub const H: u32 = 1;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct AttackMagic {
     pub mask: BoardMask,
     // the magic number is unique to each mask and ensures the bijective property of our hash

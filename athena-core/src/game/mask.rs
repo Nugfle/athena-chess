@@ -1,9 +1,11 @@
 use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not};
 
+use serde::{Deserialize, Serialize};
+
 use crate::game::board::square::Square;
 
 /// a mask to overlay over a Occupancy
-#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct BoardMask(pub u64);
 
 impl BitOr<BoardMask> for BoardMask {

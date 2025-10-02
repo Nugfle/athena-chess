@@ -1,11 +1,16 @@
 use super::board::Occupancy;
 use super::board::square::*;
-
 use super::mask::BoardMask;
 use attack_magic::AttackMagic;
+use log::{info, warn};
 use move_logic::create_knight_attack_pattern;
-
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use serde::Deserialize;
+use serde::Serialize;
+use serde_json;
+use std::env::current_dir;
+use std::env::home_dir;
+use std::fs;
 
 mod attack_magic;
 mod move_logic;
@@ -13,17 +18,51 @@ mod move_logic;
 /// hold the attack tables for rook, bishop and knight, which are precomputed at engine startup.
 /// During board evaluation, getting all possible moves for a piece is as simple as 2 pointer
 /// lookups or ~200 ns
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AttackTables {
+    #[serde(with = "serde_arrays")]
     pub rook_tables: [AttackMagic; 64],
+    #[serde(with = "serde_arrays")]
     pub bishop_tables: [AttackMagic; 64],
+    #[serde(with = "serde_arrays")]
     pub knight_table: [BoardMask; 64],
 }
 
 impl AttackTables {
+    pub fn init_table() -> Self {
+        let base_dir = home_dir().unwrap_or(current_dir().unwrap());
+        let file_path = base_dir.join(".config/athena-engine").with_file_name("attack-tables.txt");
+
+        if !fs::exists(&file_path).unwrap() {
+            fs::create_dir_all(&file_path).unwrap();
+        }
+
+        fs::File::options()
+            .create(true)
+            .read(true)
+            .write(true)
+            .open(file_path)
+            .and_then(|f| match serde_json::from_reader(&f) {
+                Ok(t) => Ok(t),
+                Err(e) => {
+                    warn!("failed to deserialize attack tables: {}", e);
+                    let t = Self::create_tables();
+                    match serde_json::to_writer(f, &t) {
+                        Err(e) => warn!("failed to store attack tables: {}", e),
+                        Ok(_) => info!("saved attack tables to file"),
+                    }
+                    Ok(t)
+                }
+            })
+            .unwrap_or_else(|e| {
+                warn!("can't open attack table config file: {}", e);
+                Self::create_tables()
+            })
+    }
+
     /// parralelized computes magic values and tables for sliding pieces as well as a simple Table for the
     /// knight
-    pub fn create_tables() -> Self {
+    fn create_tables() -> Self {
         // note the use of par_iter, so we can compute all 64 at the same time
         let mut bishop_vec: Vec<Option<AttackMagic>> = (0..64)
             .into_par_iter()
