@@ -83,7 +83,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "athena-chess"
+name = "athena-cli"
+version = "0.1.0"
+dependencies = [
+ "athena-core",
+ "env_logger",
+ "log",
+ "thiserror",
+]
+
+[[package]]
+name = "athena-core"
 version = "0.1.0"
 dependencies = [
  "colored",
@@ -92,6 +102,16 @@ dependencies = [
  "log",
  "rand",
  "rayon",
+ "thiserror",
+]
+
+[[package]]
+name = "athena-service"
+version = "0.1.0"
+dependencies = [
+ "athena-core",
+ "env_logger",
+ "log",
  "serde",
  "serde_json",
  "thiserror",
