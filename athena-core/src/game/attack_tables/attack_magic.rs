@@ -1,3 +1,43 @@
+//! Magic bitboard implementation for fast sliding piece move generation.
+//!
+//! This module implements the magic bitboard technique, which provides:
+//! - O(1) move generation for sliding pieces (rooks, bishops, queens)
+//! - Compact storage of pre-calculated attack patterns
+//! - Perfect hashing of piece-blocking configurations
+//!
+//! # Magic Bitboards
+//!
+//! Magic bitboards use perfect hashing to map board occupancy patterns
+//! to pre-calculated attack patterns. The technique involves:
+//!
+//! 1. Creating masks for relevant blocking squares
+//! 2. Finding "magic" numbers that create perfect hash functions
+//! 3. Pre-calculating all possible attack patterns
+//! 4. Using the magic hash to look up patterns during move generation
+//!
+//! # Performance
+//!
+//! - Move generation: O(1) (two array lookups)
+//! - Memory usage: Configurable via sparseness factor H
+//! - Initialization: One-time cost, can be cached to disk
+//!
+//! # Examples
+//!
+//! ```rust
+//! use athena_core::game::attack_tables::{AttackMagic, Square};
+//!
+//! // Create magic bitboard for a rook
+//! let rook_magic = AttackMagic::create_attack_magic_rook(Square::E4);
+//!
+//! // Get attack pattern for current board state
+//! let occupancy = current_board.get_occupancy();
+//! let attacks = rook_magic.attack_patterns[occupancy.hash(
+//!     rook_magic.mask,
+//!     rook_magic.magic_number,
+//!     rook_magic.shift
+//! )];
+//! ```
+
 use log::info;
 use rand::{self, random};
 use serde::{Deserialize, Serialize};
@@ -7,10 +47,48 @@ use crate::game::BoardMask;
 use crate::game::board::Occupancy;
 use crate::game::board::square::Square;
 
-/// the density with which the arrays will be paced. Increasing this will result in more sparsely
-/// populated arrays but faster times for finding magic numbers
+/// Sparseness factor for attack pattern arrays.
+///
+/// Higher values result in:
+/// - Sparser arrays (more memory usage)
+/// - Faster magic number generation
+/// - Potentially faster lookups
+///
+/// Lower values provide:
+/// - More compact arrays
+/// - Slower magic number generation
+/// - Potentially slower lookups
 pub const H: u32 = 1;
 
+/// Magic bitboard data structure for a single piece type and square.
+///
+/// This struct contains all the data needed for O(1) attack pattern lookup:
+/// - Pre-calculated attack patterns for all possible occupancies
+/// - Magic number for perfect hashing
+/// - Mask of relevant blocking squares
+/// - Shift value for hash calculation
+///
+/// # Fields
+///
+/// * `mask` - Bitboard of squares that can block the piece's movement
+/// * `magic_number` - Number that creates perfect hash function
+/// * `shift` - Number of bits to right-shift for final hash
+/// * `attack_patterns` - Pre-calculated patterns indexed by occupancy hash
+///
+/// # Examples
+///
+/// ```rust
+/// use athena_core::game::attack_tables::AttackMagic;
+///
+/// // Create magic bitboard for bishop on E4
+/// let bishop_magic = AttackMagic::create_attack_magic_bishop(Square::E4);
+///
+/// // Look up attack pattern
+/// let hash = occupancy.hash(bishop_magic.mask,
+///                          bishop_magic.magic_number,
+///                          bishop_magic.shift);
+/// let attacks = bishop_magic.attack_patterns[hash];
+/// ```
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct AttackMagic {
     pub mask: BoardMask,

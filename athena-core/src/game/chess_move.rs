@@ -1,8 +1,52 @@
+//! Chess move representation and manipulation.
+//!
+//! This module provides a comprehensive representation of chess moves through
+//! the `Move` enum, which handles all types of chess moves including:
+//! - Normal moves and captures
+//! - Special moves (en passant, castling)
+//! - Pawn promotions (with and without capture)
+//!
+//! # Examples
+//!
+//! ```rust
+//! use athena_core::game::{Move, Square, Piece};
+//!
+//! // Create a normal move
+//! let normal = Move::new(Piece::Knight, Square::E4, Square::F6, None);
+//!
+//! // Create a capture
+//! let capture = Move::new(Piece::Bishop, Square::C4, Square::F7, Some(Piece::Pawn));
+//!
+//! // Create a promotion
+//! let promotion = Move::promotion(Square::E7, Square::E8, None, Piece::Queen);
+//!
+//! // Create a castling move
+//! let castle = Move::castle_kingside(Square::E1, Square::G1, Square::H1, Square::F1);
+//! ```
+//!
+//! # Move Validation
+//!
+//! The module focuses on move representation rather than validation.
+//! Move validation is handled by the board logic that generates legal moves.
+
 use std::fmt::Display;
 
 use super::board::piece::Piece;
 use super::board::square::Square;
 
+/// Represents all possible chess moves with their specific properties.
+///
+/// This enum covers every type of chess move:
+/// - Normal moves (piece movement to an empty square)
+/// - Captures (taking an opponent's piece)
+/// - Special pawn moves (en passant)
+/// - Pawn promotions (with and without capture)
+/// - Castling (both kingside and queenside)
+///
+/// Each variant contains all necessary information to:
+/// - Execute the move on the board
+/// - Display the move in algebraic notation
+/// - Undo the move if needed
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Move {
     /// Normal move without capture
@@ -66,7 +110,7 @@ impl Move {
     }
 
     /// Create an en passant move
-    pub fn en_pesante(from: Square, to: Square) -> Self {
+    pub fn en_pasante(from: Square, to: Square) -> Self {
         Self::EnPassant { from, to }
     }
 

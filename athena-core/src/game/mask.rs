@@ -1,10 +1,63 @@
+//! Bitboard masks for efficient chess move and attack pattern representation.
+//!
+//! This module provides the `BoardMask` type, which represents a set of squares
+//! on a chess board using a 64-bit integer. Each bit corresponds to one square,
+//! allowing for efficient:
+//! - Move pattern generation
+//! - Attack pattern calculation
+//! - Square set operations (union, intersection)
+//!
+//! # Examples
+//!
+//! ```rust
+//! use athena_core::game::mask::BoardMask;
+//! use athena_core::game::board::Square;
+//!
+//! // Create masks
+//! let mut mask1 = BoardMask::default();
+//! let mut mask2 = BoardMask::default();
+//!
+//! // Add squares
+//! mask1.add_square(Square::E4);
+//! mask2.add_square(Square::E5);
+//!
+//! // Combine masks
+//! let combined = mask1 | mask2;
+//! let intersection = mask1 & mask2;
+//!
+//! // Convert to squares
+//! let squares: Vec<Square> = combined.as_squares();
+//! ```
+
 use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not};
 
 use serde::{Deserialize, Serialize};
 
 use crate::game::board::square::Square;
 
-/// a mask to overlay over a Occupancy
+/// A bitboard representing a set of squares on a chess board.
+///
+/// `BoardMask` uses a 64-bit integer where each bit represents one square.
+/// The mapping follows standard chess board layout:
+/// - Least significant bit: A1
+/// - Most significant bit: H8
+///
+/// This type implements standard bitwise operations to allow efficient
+/// set operations on squares:
+/// - OR (|): Union of two sets of squares
+/// - AND (&): Intersection of two sets
+/// - XOR (^): Symmetric difference
+/// - NOT (!): Complement (all squares not in the set)
+///
+/// # Examples
+///
+/// ```rust
+/// use athena_core::game::mask::BoardMask;
+///
+/// let mut mask = BoardMask::default(); // Empty mask
+/// mask.add_square(Square::E4);        // Set E4 bit
+/// assert!(mask.contains(Square::E4));  // Check if E4 is set
+/// ```
 #[derive(Debug, Clone, Default, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct BoardMask(pub u64);
 
