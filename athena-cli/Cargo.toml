@@ -1,0 +1,12 @@
+[package]
+name = "athena-cli"
+version = "0.1.0"
+edition.workspace = true
+author.workspace = true
+
+[dependencies]
+env_logger.workspace = true
+thiserror.workspace = true
+log.workspace = true
+athena-core = {path = "../athena-core"}
+
