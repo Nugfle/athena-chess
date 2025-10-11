@@ -119,7 +119,7 @@ mod move_generation_tests {
         let moves = game.get_available_moves();
 
         // Should not be able to move to E7, E8 (blocked by pawn)
-        assert!(!moves.iter().any(|mv| mv.get_to() == E7));
+        assert!(!moves.iter().any(|mv| mv.get_to() == E7), "{:#?}", moves);
         assert!(!moves.iter().any(|mv| mv.get_to() == E8));
 
         // Should not be able to move to H4 (blocked by knight)
@@ -211,7 +211,7 @@ mod move_generation_tests {
 
         // Should have both single and double moves for each pawn
         assert!(moves.iter().any(|mv| mv.get_from() == E2 && mv.get_to() == E3));
-        assert!(moves.iter().any(|mv| mv.get_from() == E2 && mv.get_to() == E4));
+        assert!(moves.iter().any(|mv| mv.get_from() == E2 && mv.get_to() == E4), "{:#?}", moves);
         assert!(moves.iter().any(|mv| mv.get_from() == D2 && mv.get_to() == D3));
         assert!(moves.iter().any(|mv| mv.get_from() == D2 && mv.get_to() == D4));
 
@@ -299,7 +299,12 @@ mod move_generation_tests {
 
         // Should have en passant move available
         let en_passant_move = moves.iter().find(|mv| matches!(mv, Move::EnPassant { from: E5, to: D6 }));
-        assert!(en_passant_move.is_some(), "En passant move should be available");
+        assert!(
+            en_passant_move.is_some(),
+            "En passant move should be available: {:#?} \n {:#?}",
+            moves,
+            Move::EnPassant { from: E5, to: D6 }
+        );
 
         // Should also have normal forward move
         assert!(moves.iter().any(|mv| mv.get_from() == E5 && mv.get_to() == E6));

@@ -50,11 +50,7 @@ use super::board::square::Square;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Move {
     /// Normal move without capture
-    Normal {
-        piece: Piece,
-        from: Square,
-        to: Square,
-    },
+    Normal { piece: Piece, from: Square, to: Square },
     /// Move that captures an opponent's piece
     Capture {
         piece: Piece,
@@ -63,16 +59,9 @@ pub enum Move {
         captured: Piece,
     },
     /// En passant capture
-    EnPassant {
-        from: Square,
-        to: Square,
-    },
+    EnPassant { from: Square, to: Square },
     /// Pawn promotion without capture
-    Promotion {
-        from: Square,
-        to: Square,
-        promoted_to: Piece,
-    },
+    Promotion { from: Square, to: Square, promoted_to: Piece },
     /// Pawn promotion with capture
     PromotionCapture {
         from: Square,
@@ -99,12 +88,7 @@ impl Move {
     /// Create a new normal move or capture based on whether a piece is taken
     pub fn new(piece: Piece, from: Square, to: Square, takes: Option<Piece>) -> Self {
         match takes {
-            Some(captured) => Self::Capture {
-                piece,
-                from,
-                to,
-                captured,
-            },
+            Some(captured) => Self::Capture { piece, from, to, captured },
             None => Self::Normal { piece, from, to },
         }
     }
