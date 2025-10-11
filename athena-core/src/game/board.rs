@@ -1,3 +1,34 @@
+//! Chess board representation using bitboards and piece lists.
+//!
+//! This module provides an efficient board representation that combines:
+//! - A piece list for quick piece placement and removal
+//! - A bitboard for fast move generation and attack detection
+//! - Methods for board manipulation and state queries
+//!
+//! # Board Representation
+//!
+//! The board uses two main data structures:
+//! - `board`: An array of 64 squares storing piece types and colors
+//! - `occupancy`: A bitboard tracking piece locations for fast lookups
+//!
+//! # Examples
+//!
+//! ```rust
+//! use athena_core::game::board::{BitBoard, Square, Piece, Color};
+//!
+//! let mut board = BitBoard::init(); // Create standard chess position
+//!
+//! // Place and remove pieces
+//! let e4 = Square::E4;
+//! board.place_piece_on_square(Piece::Queen, Color::White, e4);
+//! let piece = board.remove_piece_from_square(e4);
+//!
+//! // Query the board
+//! if board.is_occupied(e4) {
+//!     println!("Square is occupied!");
+//! }
+//! ```
+
 pub mod piece;
 pub mod square;
 
@@ -6,9 +37,30 @@ use square::*;
 
 use crate::game::ATTACK_TABLES;
 
-/// a representation of the board where each bit in the u64 represents the square on the board and
-/// whether it is occupied. This makes checking for blocking pieces as easy as applying a mask to
-/// the Occupancy and voila, you get all the squares with blocking pieces
+/// A bitboard representing piece occupancy on the chess board.
+///
+/// Each bit in the 64-bit integer corresponds to a square on the chess board,
+/// where 1 indicates a piece is present and 0 indicates an empty square.
+/// This representation allows for extremely fast operations:
+/// - Checking if a square is occupied (single bit test)
+/// - Finding blocking pieces (bitwise AND with a mask)
+/// - Updating piece positions (bitwise OR/AND)
+///
+/// # Examples
+///
+/// ```rust
+/// use athena_core::game::board::{Occupancy, Square};
+///
+/// let mut occ = Occupancy::default(); // Empty board
+/// let e4 = Square::E4;
+///
+/// // Add and remove pieces
+/// occ.add_square(e4);
+/// assert!(occ.is_occupied(e4));
+///
+/// occ.remove_square(e4);
+/// assert!(!occ.is_occupied(e4));
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Occupancy(pub u64);
 
@@ -36,13 +88,44 @@ impl Occupancy {
     }
 }
 
-/// represents the current Board state.
+/// Complete representation of a chess position.
+///
+/// This struct combines two complementary board representations:
+/// - A piece list storing the type and color of pieces on each square
+/// - A bitboard tracking piece occupancy for fast move generation
+///
+/// The dual representation allows for both:
+/// - Fast piece lookup and manipulation (through the piece list)
+/// - Efficient move generation and attack detection (through the bitboard)
+///
+/// # Fields
+///
+/// * `board` - Array of 64 squares, each containing an optional piece and color
+/// * `occupancy` - Bitboard tracking which squares are occupied (must be kept in sync with `board`)
+///
+/// # Examples
+///
+/// ```rust
+/// use athena_core::game::board::BitBoard;
+///
+/// // Create a board with the standard chess starting position
+/// let mut board = BitBoard::init();
+///
+/// // Create an empty board
+/// let empty_board = BitBoard::default();
+/// ```
+///
+/// # Implementation Note
+///
+/// The `occupancy` field must always be kept in sync with the `board` array.
+/// Use the provided methods like `place_piece_on_square` and `remove_piece_from_square`
+/// to ensure consistency between the two representations.
 #[derive(Debug, Clone)]
 pub struct BitBoard {
+    /// Array representing each square's contents (piece type and color)
     pub board: [Option<(Piece, Color)>; 64],
 
-    // tracks whether each square is occupied, must be kept in sync with the board. Should only be
-    // used for lookups in the Attack Tables.
+    /// Bitboard tracking occupied squares for fast move generation
     pub occupancy: Occupancy,
 }
 
@@ -84,8 +167,10 @@ impl BitBoard {
         if square.move_on_rank(1).is_ok_and(|s| {
             self.board[s.as_index()].is_some_and(|(piece, col)| piece.is_king() && col == color)
                 || s.move_on_file(1).is_ok_and(|sf| {
-                    self.board[sf.as_index()]
-                        .is_some_and(|(piece, col)| col == color && ((piece.is_king()) || (piece.is_pawn() && color == Color::Black)))
+                    self.board[sf.as_index()].is_some_and(|(piece, col)| {
+                        col == color
+                            && ((piece.is_king()) || (piece.is_pawn() && color == Color::Black))
+                    })
                 })
         }) {
             return true;
@@ -93,8 +178,10 @@ impl BitBoard {
         if square.move_on_rank(-1).is_ok_and(|s| {
             self.board[s.as_index()].is_some_and(|(piece, col)| piece.is_king() && col == color)
                 || s.move_on_file(-1).is_ok_and(|sf| {
-                    self.board[sf.as_index()]
-                        .is_some_and(|(piece, col)| col == color && ((piece.is_king()) || (piece.is_pawn() && color == Color::White)))
+                    self.board[sf.as_index()].is_some_and(|(piece, col)| {
+                        col == color
+                            && ((piece.is_king()) || (piece.is_pawn() && color == Color::White))
+                    })
                 })
         }) {
             return true;
@@ -102,8 +189,10 @@ impl BitBoard {
         if square.move_on_rank(1).is_ok_and(|s| {
             self.board[s.as_index()].is_some_and(|(piece, col)| piece.is_king() && col == color)
                 || s.move_on_file(-1).is_ok_and(|sf| {
-                    self.board[sf.as_index()]
-                        .is_some_and(|(piece, col)| col == color && ((piece.is_king()) || (piece.is_pawn() && color == Color::Black)))
+                    self.board[sf.as_index()].is_some_and(|(piece, col)| {
+                        col == color
+                            && ((piece.is_king()) || (piece.is_pawn() && color == Color::Black))
+                    })
                 })
         }) {
             return true;
@@ -111,8 +200,10 @@ impl BitBoard {
         if square.move_on_rank(-1).is_ok_and(|s| {
             self.board[s.as_index()].is_some_and(|(piece, col)| piece.is_king() && col == color)
                 || s.move_on_file(-1).is_ok_and(|sf| {
-                    self.board[sf.as_index()]
-                        .is_some_and(|(piece, col)| col == color && ((piece.is_king()) || (piece.is_pawn() && color == Color::White)))
+                    self.board[sf.as_index()].is_some_and(|(piece, col)| {
+                        col == color
+                            && ((piece.is_king()) || (piece.is_pawn() && color == Color::White))
+                    })
                 })
         }) {
             return true;
@@ -159,7 +250,12 @@ impl BitBoard {
         self.place_piece_on_square(Piece::Pawn, Color::White, A2);
     }
 
-    pub fn place_piece_on_square(&mut self, piece: Piece, color: Color, square: Square) -> Option<(Piece, Color)> {
+    pub fn place_piece_on_square(
+        &mut self,
+        piece: Piece,
+        color: Color,
+        square: Square,
+    ) -> Option<(Piece, Color)> {
         self.occupancy.add_square(square);
         self.board[square.as_index()].replace((piece, color))
     }

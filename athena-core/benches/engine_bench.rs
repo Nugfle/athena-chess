@@ -1,5 +1,29 @@
+//! Performance benchmarks for the Athena chess engine.
+//!
+//! This module provides benchmarks for critical engine operations:
+//! - Attack table generation
+//! - Move generation performance
+//! - Position evaluation speed
+//!
+//! # Running Benchmarks
+//!
+//! ```bash
+//! cargo bench --features benchmark
+//! ```
+//!
+//! # Configuration
+//!
+//! Benchmarks use the following settings:
+//! - 10 samples per benchmark
+//! - 10 second measurement time
+//! - 3 second warm-up period
+//! - 1000 bootstrap resamples for statistics
+//!
+//! The benchmarks help identify performance regressions and
+//! optimization opportunities in the engine's core functionality.
+
 #![cfg(feature = "benchmark")]
-use athena_chess::game::create_tables;
+use athena_core::game::create_tables;
 use criterion::{Criterion, criterion_group, criterion_main};
 use std::time::Duration;
 

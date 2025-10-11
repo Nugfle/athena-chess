@@ -3,7 +3,17 @@
 Athena Chess is a configurable chess engine written in Rust, designed to run either as a backend service or locally as a CLI. The project aims to provide a fast, modular, and extensible chess bot leveraging modern Rust features and parallelism.
 
 > **Project Status:**
-> Athena Chess is in an early stage of development. Core move generation and board logic are implemented, but there is not yet a fully working bot or evaluation logic.
+> Athena Chess is currently undergoing a major rewrite with a new workspace-based architecture for better modularity and maintainability. Core move generation and board logic are implemented in the `athena-core` crate.
+
+---
+
+## Project Structure
+
+The project is organized as a Rust workspace with three main crates:
+
+- **athena-core**: Core chess engine functionality including board representation, move generation, and evaluation
+- **athena-cli**: Command-line interface for local usage and testing
+- **athena-service**: Backend service implementation for remote integration
 
 ---
 
@@ -21,10 +31,20 @@ Athena Chess is a configurable chess engine written in Rust, designed to run eit
 
 ## Architecture
 
-- **src/game/**: Core chess logic (board, pieces, moves, attack tables).
-- **src/service/**: Backend TCP service for engine integration (WIP).
-- **src/main.rs**: Entry point for CLI and service modes.
-- **benches/**: Criterion benchmarks for engine performance.
+### athena-core
+- **src/game/**: Core chess logic including board representation and move generation
+  - **board/**: Bitboard-based board representation
+  - **attack_tables/**: Magic bitboard attack table generation
+- **src/evaluation/**: Position evaluation and search algorithms
+- **benches/**: Criterion benchmarks for engine performance
+
+### athena-cli
+- Command-line interface for local usage
+- Interactive mode for testing and development
+
+### athena-service
+- Backend TCP service for remote integration
+- JSON-based protocol for game state and move commands
 
 ---
 
@@ -35,16 +55,16 @@ Athena Chess is a configurable chess engine written in Rust, designed to run eit
 
 ### Build & Run (CLI)
 ```sh
-cargo run
+cargo run -p athena-cli
 ```
-This will initialize the engine and execute a sample move. (See `src/main.rs` for details.)
+This will start the interactive CLI mode.
 
 ### Build & Run (Service)
-To run as a TCP backend service (requires `tokio`, `serde`, and `serde_json`):
+To run as a TCP backend service:
 ```sh
-cargo run --features service -- 6969
+cargo run -p athena-service -- --port 6969
 ```
-This will start the service on port 6969. (Protocol WIP)
+This will start the service on port 6969.
 
 ### Docker
 A `Dockerfile` is provided:

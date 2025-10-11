@@ -1,7 +1,35 @@
+//! Chess board square representation and manipulation.
+//!
+//! This module provides types and constants for working with chess squares:
+//! - Square representation with rank and file
+//! - Constants for all chess squares (A1-H8)
+//! - Square manipulation (movement, relative position)
+//! - Algebraic notation formatting
+//!
+//! # Examples
+//!
+//! ```rust
+//! use athena_core::game::board::square::{Square, Rank, File};
+//!
+//! // Create squares
+//! let e4 = Square::from_rank_file(Rank::Four, File::E);
+//! let e5 = e4.move_on_file(1).unwrap();
+//!
+//! // Get components
+//! assert_eq!(e4.get_rank(), Rank::Four);
+//! assert_eq!(e4.get_file(), File::E);
+//!
+//! // Calculate relative positions
+//! assert_eq!(e4.get_delta_file(e5), 0);
+//! assert_eq!(e4.get_delta_rank(e5), 1);
+//! ```
+
 use std::fmt::Display;
 
 use crate::game::error::ChessError;
 
+// Constants for all chess squares
+/// Square A1 (bottom-left corner)
 pub const A1: Square = Square::from_rank_file(Rank::One, File::A);
 pub const A2: Square = Square::from_rank_file(Rank::Two, File::A);
 pub const A3: Square = Square::from_rank_file(Rank::Three, File::A);
@@ -67,7 +95,23 @@ pub const H6: Square = Square::from_rank_file(Rank::Six, File::H);
 pub const H7: Square = Square::from_rank_file(Rank::Seven, File::H);
 pub const H8: Square = Square::from_rank_file(Rank::Eight, File::H);
 
-/// an enum representing the files on a chess board used for save construction of squares.
+/// Represents a file (column) on a chess board.
+///
+/// Files are labeled A through H from left to right.
+/// The enum variants have numeric values 0-7 to allow:
+/// - Easy conversion to square indices
+/// - Natural ordering for comparisons
+/// - Safe construction of squares
+///
+/// # Examples
+///
+/// ```rust
+/// use athena_core::game::board::square::File;
+///
+/// let file = File::E;
+/// assert!(file.is_on_edge() == false);
+/// assert_eq!(file as u8, 4);
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum File {
     A = 0,
@@ -80,7 +124,23 @@ pub enum File {
     H = 7,
 }
 
-/// an enum representing the ranks on a chess board used for save construction of squares.
+/// Represents a rank (row) on a chess board.
+///
+/// Ranks are numbered 1 through 8 from bottom to top.
+/// The enum variants have numeric values 0-7 to allow:
+/// - Easy conversion to square indices
+/// - Natural ordering for comparisons
+/// - Safe construction of squares
+///
+/// # Examples
+///
+/// ```rust
+/// use athena_core::game::board::square::Rank;
+///
+/// let rank = Rank::One;
+/// assert!(rank.is_on_edge());
+/// assert_eq!(rank as u8, 0);
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Rank {
     One = 0,
@@ -93,7 +153,54 @@ pub enum Rank {
     Eight = 7,
 }
 
-/// represents a square on a chess board. Can be in Range from 0 to 63
+impl Rank {
+    pub fn is_on_edge(&self) -> bool {
+        match self {
+            Self::One | Self::Eight => true,
+            _ => false,
+        }
+    }
+}
+
+impl File {
+    pub fn is_on_edge(&self) -> bool {
+        match self {
+            Self::A | Self::H => true,
+            _ => false,
+        }
+    }
+}
+
+/// Represents a square on a chess board.
+///
+/// Squares are stored as a single byte value 0-63, calculated as:
+/// `square_index = rank * 8 + file`
+///
+/// This representation allows:
+/// - Compact storage (single byte)
+/// - Fast calculations (simple arithmetic)
+/// - Safe construction through rank/file pairs
+///
+/// The square indexing follows standard chess convention:
+/// - A1 = 0 (bottom-left corner)
+/// - H8 = 63 (top-right corner)
+/// - Left to right, bottom to top
+///
+/// # Examples
+///
+/// ```rust
+/// use athena_core::game::board::square::{Square, Rank, File};
+///
+/// // Create a square
+/// let e4 = Square::from_rank_file(Rank::Four, File::E);
+///
+/// // Get components
+/// assert_eq!(e4.get_rank(), Rank::Four);
+/// assert_eq!(e4.get_file(), File::E);
+///
+/// // Convert to index
+/// assert_eq!(e4.as_index(), 28);
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, PartialOrd, Ord)]
 pub struct Square(u8);
 
@@ -112,7 +219,7 @@ impl Square {
     /// use of this function is highly discouraged, as it can easily lead to errors. Please use the
     /// from_rank_file method instead.
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(Square::new(9).unwrap(), B2);
     ///```
     pub fn new(s: u8) -> Result<Self, ChessError> {
@@ -124,7 +231,7 @@ impl Square {
     }
 
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(Square::from_rank_file(Rank::Four, File::A), A4);
     ///```
     pub const fn from_rank_file(rank: Rank, file: File) -> Self {
@@ -132,7 +239,7 @@ impl Square {
     }
 
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(A1.as_index(), 0);
     /// assert_eq!(B2.as_index(), 9);
     /// assert_eq!(H8.as_index(), 63);
@@ -142,7 +249,7 @@ impl Square {
     }
 
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(A1.as_u8(), 0);
     /// assert_eq!(B2.as_u8(), 9);
     /// assert_eq!(H8.as_u8(), 63);
@@ -152,7 +259,7 @@ impl Square {
     }
 
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(E4.get_rank(), Rank::Four);
     /// assert_eq!(A1.get_rank(), Rank::One);
     ///```
@@ -171,7 +278,7 @@ impl Square {
     }
 
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(E4.get_file(), File::E);
     /// assert_eq!(A1.get_file(), File::A);
     ///```
@@ -191,7 +298,7 @@ impl Square {
 
     /// moves the square by delta on the current rank
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(E4.move_on_rank(-2).unwrap(), C4);
     /// assert_eq!(A1.move_on_rank(1).unwrap(), B1);
     ///```
@@ -209,7 +316,7 @@ impl Square {
 
     /// moves the square by delta on the current file
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(E4.move_on_file(-2).unwrap(), E2);
     /// assert_eq!(A1.move_on_file(1).unwrap(), A2);
     ///´´´
@@ -227,7 +334,7 @@ impl Square {
 
     /// returns the delta rank to get to self from other
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(E4.get_delta_rank(E8), 4);
     /// assert_eq!(C8.get_delta_rank(C6), -2);
     /// assert_eq!(A3.get_delta_rank(G5), 2);
@@ -239,7 +346,7 @@ impl Square {
 
     /// returns the delta file to get to self from other
     ///```
-    /// use athena_chess::game::*;
+    /// use athena_core::game::*;
     /// assert_eq!(A4.get_delta_file(E4), 4);
     /// assert_eq!(F8.get_delta_file(C8), -3);
     /// assert_eq!(A3.get_delta_file(G5), 6);
